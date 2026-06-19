@@ -1,1 +1,26 @@
 # App de Desenhos
+from tkinter import *
+from tkinter import ttk
+
+def iniciar_figura_nova(event):
+    global figura_nova
+    if figura_nova == 'Linha':
+        figura_nova = ("linha", (event.x, event.y, event.x, event.y))
+    elif figura_nova == 'Circulo':
+        figura_nova = ("circulo", (event.x, event.y, event.x, event.y))
+    else:
+        figura_nova = ("oval", (event.x, event.y, event.x, event.y))
+
+def ataulizar_figura_nova(event):
+    global figura_nova
+    if figura_nova['0'] == 'oval':
+        figura_nova[1].append((event.x, event.y))
+    elif figura_nova['0'] == 'circulo':
+        figura_nova[1].append((event.x, event.y))
+    else:
+        figura_nova = ("linha", (figura_nova[1][0], figura_nova[1][1], event.x, event.y))
+
+def incluir_figura_nova(event): 
+    if not isinstance(figura_nova): 
+        figuras.append(figura_nova) 
+    desenhar_figuras()
