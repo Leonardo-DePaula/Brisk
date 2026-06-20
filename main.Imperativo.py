@@ -128,9 +128,9 @@ preenchimentoCor = ttk.Button(organizar, text="Cor de Preenchimento", command=es
 bordaCor = ttk.Button(organizar, text="Cor da Borda", command=escolher_cor_brd)
 limparTela = ttk.Button(organizar, text="Limpar Tela", command= limpar_tela)
 
-preenchimentoCor.grid(column=1, row=0, sticky=W, **paddings)
-bordaCor.grid(column=2, row=0, sticky=W, **paddings)
-option_menu.grid(column=3, row=0, sticky=W, **paddings)
+option_menu.grid(column=1, row=0, sticky=W, **paddings)
+preenchimentoCor.grid(column=2, row=0, sticky=W, **paddings)
+bordaCor.grid(column=3, row=0, sticky=W, **paddings)
 limparTela.grid(column=4, row=0, sticky=W, **paddings)
 # Área de desenho
 canvas = Canvas(organizar, bg='white', width=janela.winfo_screenwidth(), height=janela.winfo_screenheight())
