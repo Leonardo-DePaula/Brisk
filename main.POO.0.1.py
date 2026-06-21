@@ -102,7 +102,7 @@ class ProgramaPrincipal:
                                      self.cor_borda)
 
         elif tipo == "Rabisco":
-            self.figura_nova = Rabisco([(event.x, event.y)], self.cor_borda)
+            self.figura_nova = Rabisco([(event.x, event.y)], self.cor_borda)    
 
     def atualizar_figura_nova(self, event):
         if not self.figura_nova:
@@ -119,6 +119,10 @@ class ProgramaPrincipal:
     
     def incluir_figura_nova(self, event):
         if self.figura_nova:
+            if isinstance(self.figura_nova, Rabisco):
+                if len(self.figura_nova.pontos) < 2:
+                    self.figura_nova = None
+                    return
             self.figuras.append(self.figura_nova)
             self.figura_nova = None
 
