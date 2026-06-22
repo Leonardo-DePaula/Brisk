@@ -71,29 +71,14 @@ class Retangulo(Figura):
                                  dash=dash)
 
 class Poligono(Figura):
-    def __init__(self, centro_x, centro_y, raio, num_lados, cor_borda, cor_preenchimento, tamEspessura):
+    def __init__(self, pontosPoligonos, cor_borda, cor_preenchimento, tamEspessura):
         super().__init__(cor_preenchimento, cor_borda)
-        self.centro_x, self.centro_y = centro_x, centro_y
-        self.raio = raio
-        self.num_lados = num_lados
+        self.pontosPoligonos = pontosPoligonos
         self.tamEspessura = tamEspessura
 
-    def calcular_pontos(self):
-        pontos = []
-        angulo_inicial = -math.pi / 2 
-        for i in range(self.num_lados):
-            angulo = angulo_inicial + (2 * math.pi * i / self.num_lados)
-            x = self.centro_x + self.raio * math.cos(angulo)
-            y = self.centro_y + self.raio * math.sin(angulo)
-            pontos.append((x, y))
-        return pontos
-
     def desenhar(self, canvas, dash=None):
-        if self.raio <= 0:
-            return
-        pontos = self.calcular_pontos()
-        canvas.create_polygon(pontos,
-                              fill=self.cor_preenchimento, 
-                              outline=self.cor_borda, 
-                              width=self.tamEspessura, 
-                              dash=dash)
+        canvas.create_polygon(*self.pontosPoligonos,
+                           fill=self.cor_preenchimento,
+                           outline=self.cor_borda,
+                           width=self.tamEspessura, 
+                           dash=dash)
