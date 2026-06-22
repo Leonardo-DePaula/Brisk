@@ -1,198 +1,171 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter.colorchooser import askcolor
-
-class Figura:
-    def __init__(self, cor_preenchimento, cor_borda):
-        self.cor_preenchimento = cor_preenchimento
-        self.cor_borda = cor_borda
-
-    def desenhar(self, canvas, dash=None):
-        pass
-
-class Linha(Figura):
-    def __init__(self, x1, y1, x2, y2, cor_borda, tamanho_borda):
-        super().__init__("", cor_borda)
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
-        self.tamanho_borda = tamanho_borda
-
-    def desenhar(self, canvas, dash=None):
-        canvas.create_line(
-            self.x1, self.y1, self.x2, self.y2,
-            fill=self.cor_borda,
-            width=self.tamanho_borda,
-            dash=dash)
-
-class Rabisco(Figura):
-    def __init__(self, pontos, cor_borda, tamanho_borda):
-        super().__init__("", cor_borda)
-        self.pontos = pontos
-        self.tamanho_borda = tamanho_borda
-
-    def desenhar(self, canvas, dash=None):
-        canvas.create_line(
-            self.pontos,
-            fill=self.cor_borda,
-            width=self.tamanho_borda,
-            dash=dash)
-
-class Retangulo(Figura):
-    def __init__(self, x1, y1, x2, y2, cor_borda, cor_preenchimento, tamanho_borda):
-        super().__init__(cor_preenchimento, cor_borda)
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
-        self.tamanho_borda = tamanho_borda
-
-    def desenhar(self, canvas, dash=None):
-        canvas.create_rectangle(
-            self.x1, self.y1, self.x2, self.y2,
-            fill=self.cor_preenchimento,
-            outline=self.cor_borda,
-            width=self.tamanho_borda,
-            dash=dash)
-
-class Poligonos(Figura):
-    def __init__(self, x1, y1, x2, y2, x3, y3, cor_borda, cor_preenchimento, tamanho_borda):
-        super().__init__(cor_preenchimento, cor_borda)
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
-        self.x3 = x3
-        self.y3 = y3
-        self.tamanho_borda = tamanho_borda
-
-    def desenhar(self, canvas, dash=None):
-        canvas.create_polygon(
-            self.x1, self.y1, self.x2, self.y2, self.x3, self.y3,
-            fill=self.cor_preenchimento,
-            outline=self.cor_borda,
-            width=self.tamanho_borda,
-            dash=dash)
+from figuras import Linha, Rabisco, Circulo, Oval, Retangulo, Poligono
 
 class ProgramaPrincipal:
     def __init__(self, janela):
-        # Valores padrão
-        self.figuras = []
-        self.figura_nova = None
-        self.ini_x = 0
-        self.ini_y = 0
-        self.cor_preenchimento = ""
-        self.cor_borda = "black"
-        self.tamanho_borda = 1
-        # Organização
+        self.figuras, self.figura_nova = [], None
+        self.ini_x = self.ini_y = 0
+
+        self.cor_preenchimento, self.cor_borda, self.tamEspessura = "", "black", 1
+        self.num_lados = 3
+
         self.janela = janela
         self.janela.title("Brisk - App de Desenhos")
 
         self.icone = PhotoImage(data=ICONE_BASE64)
         self.janela.iconphoto(True, self.icone)
 
-        self.organizar = Frame(janela)
-        self.organizar.pack()
+        # Definição dos estilos
+        self.style = ttk.Style()
+        self.style.configure('Estilo_Frame.TFrame', background="#2b2b2b")
+        self.style.configure('Estilo_Rotulo.TLabel', background="#2b2b2b", foreground="white")
+
+        self.barra = Frame(janela, bg="#2b2b2b")
+        self.barra.pack(fill=X)
 
         self.criar_interface()
         self.criar_canvas()
 
     def criar_interface(self):
-        paddings = {"padx": 5, "pady": 5}
+        margens = {"padx": 4, "pady": 5}
 
-        # Rótulo
-        label = ttk.Label(self.organizar, text='Escolha sua ferramenta')
-        label.grid(column=0, row=0, sticky=W, **paddings)
+        organizar = ttk.Frame(self.barra, style='Estilo_Frame.TFrame')
+        organizar.grid(column=0, row=0, sticky=W)
 
-        # Menu
+        # --- ferramenta ---
+        frame_ferramenta = ttk.Frame(organizar, style='Estilo_Frame.TFrame')
+        frame_ferramenta.pack(side=LEFT, **margens)
+
+        ttk.Label(frame_ferramenta, text='Ferramenta:', style='Estilo_Rotulo.TLabel').pack(side=LEFT)
         self.tipo_figura_var = StringVar(self.janela)
-        option_menu = ttk.OptionMenu(self.organizar, self.tipo_figura_var,
+
+        option_menu = ttk.OptionMenu(frame_ferramenta, self.tipo_figura_var,
                                       'Linha',
-                                      'Linha',
+                                      'Linha', 
                                       'Rabisco',
-                                      'Retângulo',
-                                      'Oval',
-                                      'Círculo',
-                                      'Poligonos')
+                                      'Retângulo', 
+                                      'Círculo', 
+                                      'Oval', 
+                                      'Polígono')
+        
+        option_menu.pack(side=LEFT, padx=4)
+        self.tipo_figura_var.trace_add("write", self.atualizar_visibilidade_lados)
 
-        preenchimentoCor = ttk.Button(self.organizar, text="Cor de Preenchimento", command=self.escolher_cor_pr)
-        bordaCor = ttk.Button(self.organizar, text="Cor da Borda", command=self.escolher_cor_brd)
-        limparTela = ttk.Button(self.organizar, text="Limpar Tela", command=self.limpar_tela)
+        # --- cores  ---
+        frame_cores = ttk.Frame(organizar, style='Estilo_Frame.TFrame')
+        frame_cores.pack(side=LEFT, **margens)
 
-        TamanhoBorda = ttk.Scale(self.organizar, from_=1, to=10, orient=HORIZONTAL)
-        TamanhoBorda.set(1)
-        TamanhoBorda.bind("<ButtonRelease-1>", self.escolher_tamanho_borda)
+        ttk.Label(frame_cores, text='Preenchimento:', style='Estilo_Rotulo.TLabel').pack(side=LEFT)
 
-        preenchimentoCor.grid(column=1, row=0, sticky=W, **paddings)
-        bordaCor.grid(column=2, row=0, sticky=W, **paddings)
-        option_menu.grid(column=3, row=0, sticky=W, **paddings)
-        limparTela.grid(column=4, row=0, sticky=W, **paddings)
-        TamanhoBorda.grid(column=5, row=0, sticky=W, **paddings)
+        self.swatch_preenchimento = Button(frame_cores, 
+                                           bg="white", 
+                                           width=2,
+                                           relief="ridge", 
+                                           command=self.escolher_cor_pr)
+        
+        self.swatch_preenchimento.pack(side=LEFT, padx=(2, 10))
+
+        ttk.Label(frame_cores, text='Borda:', style='Estilo_Rotulo.TLabel').pack(side=LEFT)
+
+        self.swatch_borda = Button(frame_cores, 
+                                   bg="black", 
+                                   width=2,
+                                   relief="ridge", 
+                                   command=self.escolher_cor_brd)
+        
+        self.swatch_borda.pack(side=LEFT, padx=2)
+
+        # --- espessura ---
+        frame_espessura = ttk.Frame(organizar, style='Estilo_Frame.TFrame')
+        frame_espessura.pack(side=LEFT, **margens)
+
+        ttk.Label(frame_espessura, text='Espessura:', style='Estilo_Rotulo.TLabel').pack(side=LEFT)
+
+        TamanhoEspessuraEsc = ttk.Scale(frame_espessura, 
+                                        from_=1, 
+                                        to=10,
+                                        orient=HORIZONTAL, length=80)
+        
+        TamanhoEspessuraEsc.set(1)
+        TamanhoEspessuraEsc.bind("<ButtonRelease-1>", self.escolher_tamEspessura)
+        TamanhoEspessuraEsc.pack(side=LEFT, padx=4)
+
+        # --- lados para polígonos ---
+        self.frame_lados = ttk.Frame(organizar, style='Estilo_Frame.TFrame')
+
+        ttk.Label(self.frame_lados, text='Lados:', style='Estilo_Rotulo.TLabel').pack(side=LEFT)
+        self.lados_var = IntVar(value=3)
+
+        spin_lados = Spinbox(self.frame_lados,
+                             from_=3, 
+                             to=12, 
+                             width=3,
+                             textvariable=self.lados_var, 
+                             command=self.escolher_num_lados)
+        
+        spin_lados.pack(side=LEFT, padx=4)
+
+        # --- limpar  ---
+        frame_acoes = ttk.Frame(organizar, style='Estilo_Frame.TFrame')
+        frame_acoes.pack(side=LEFT, **margens)
+
+        ttk.Button(frame_acoes, text="Limpar", command=self.limpar_tela).pack(side=LEFT)
 
     def criar_canvas(self):
-        # Área de desenho
-        self.canvas = Canvas(self.organizar, bg='white',
-                              width=self.janela.winfo_screenwidth(),
-                              height=self.janela.winfo_screenheight())
-        self.canvas.grid(column=0, row=1, columnspan=6, sticky=W)
-
-        # Eventos de mouse
+        self.canvas = Canvas(self.janela, 
+                             bg='white', 
+                             width=janela.winfo_screenwidth(), 
+                             height=janela.winfo_screenheight())
+        
+        self.canvas.pack(fill=BOTH, expand=True)
         self.canvas.bind('<ButtonPress-1>', self.iniciar_figura_nova)
         self.canvas.bind('<B1-Motion>', self.atualizar_figura_nova)
         self.canvas.bind('<ButtonRelease-1>', self.incluir_figura_nova)
 
     def iniciar_figura_nova(self, event):
         self.ini_x, self.ini_y = event.x, event.y
+        c = (event.x, event.y, event.x, event.y)
         tipo = self.tipo_figura_var.get()
-
-        if tipo == "Linha":
-            self.figura_nova = Linha(event.x, event.y, event.x, event.y,
-                                      self.cor_borda, self.tamanho_borda)
-
-        elif tipo == "Rabisco":
-            self.figura_nova = Rabisco([(event.x, event.y)], self.cor_borda, self.tamanho_borda)
-
-        elif tipo == "Retângulo":
-            self.figura_nova = Retangulo(event.x, event.y, event.x, event.y,
-                                          self.cor_borda, self.cor_preenchimento, self.tamanho_borda)
-
-        elif tipo == "Poligonos":
-            self.figura_nova = Poligonos(event.x, event.y, event.x, event.y, event.x, event.y,
-                                          self.cor_borda, self.cor_preenchimento, self.tamanho_borda)
+        match tipo:
+            case "Linha":
+                self.figura_nova = Linha(*c, self.cor_borda, self.tamEspessura)
+            case "Rabisco":
+                self.figura_nova = Rabisco([(event.x, event.y)], self.cor_borda, self.tamEspessura)
+            case "Círculo":
+                self.figura_nova = Circulo(*c, self.cor_borda, self.cor_preenchimento, self.tamEspessura)
+            case "Oval":
+                self.figura_nova = Oval(*c, self.cor_borda, self.cor_preenchimento, self.tamEspessura)
+            case "Retângulo":
+                self.figura_nova = Retangulo(*c, self.cor_borda, self.cor_preenchimento, self.tamEspessura)
+            case "Polígono":
+                self.figura_nova = Poligono(event.x, event.y, 0, self.num_lados, self.cor_borda, self.cor_preenchimento, self.tamEspessura)
 
     def atualizar_figura_nova(self, event):
         if not self.figura_nova:
             return
-
         if isinstance(self.figura_nova, Rabisco):
             self.figura_nova.pontos.append((event.x, event.y))
-
-        elif isinstance(self.figura_nova, Poligonos):
-            self.figura_nova.x2 = event.x
-            self.figura_nova.y2 = self.figura_nova.y1
-            self.figura_nova.x3 = (self.figura_nova.x1 + event.x) / 2
-            self.figura_nova.y3 = event.y
-
+        elif isinstance(self.figura_nova, Poligono):
+            dx = event.x - self.figura_nova.centro_x
+            dy = event.y - self.figura_nova.centro_y
+            self.figura_nova.raio = (dx**2 + dy**2) ** 0.5
         else:
             self.figura_nova.x2 = event.x
             self.figura_nova.y2 = event.y
-
         self.desenhar()
 
     def incluir_figura_nova(self, event):
         if self.figura_nova:
             self.figuras.append(self.figura_nova)
             self.figura_nova = None
-
         self.desenhar()
 
     def desenhar(self):
         self.canvas.delete("all")
-
         for figura in self.figuras:
             figura.desenhar(self.canvas)
-
         if self.figura_nova:
             self.figura_nova.desenhar(self.canvas, dash=(4, 2))
 
@@ -200,14 +173,25 @@ class ProgramaPrincipal:
         cor = askcolor()[1]
         if cor:
             self.cor_preenchimento = cor
+            self.swatch_preenchimento.config(bg=cor)
 
     def escolher_cor_brd(self):
         cor = askcolor()[1]
         if cor:
             self.cor_borda = cor
+            self.swatch_borda.config(bg=cor)
 
-    def escolher_tamanho_borda(self, event):
-        self.tamanho_borda = event.widget.get()
+    def escolher_tamEspessura(self, event):
+        self.tamEspessura = int(event.widget.get())
+
+    def escolher_num_lados(self):
+        self.num_lados = self.lados_var.get()
+
+    def atualizar_visibilidade_lados(self, *args):
+        if self.tipo_figura_var.get() == "Polígono":
+            self.frame_lados.pack(side=LEFT, padx=4, pady=5)
+        else:
+            self.frame_lados.pack_forget()
 
     def limpar_tela(self):
         self.figuras.clear()
