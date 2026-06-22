@@ -51,7 +51,6 @@ class ProgramaPrincipal:
                                       'Polígono')
         
         option_menu.pack(side=LEFT, padx=4)
-        self.tipo_figura_var.trace_add("write", self.atualizar_visibilidade_lados)
 
         # --- cores  ---
         frame_cores = ttk.Frame(organizar, style='Estilo_Frame.TFrame')
@@ -92,21 +91,6 @@ class ProgramaPrincipal:
         TamanhoEspessuraEsc.bind("<ButtonRelease-1>", self.escolher_tamEspessura)
         TamanhoEspessuraEsc.pack(side=LEFT, padx=4)
 
-        # --- lados para polígonos ---
-        self.frame_lados = ttk.Frame(organizar, style='Estilo_Frame.TFrame')
-
-        ttk.Label(self.frame_lados, text='Lados:', style='Estilo_Rotulo.TLabel').pack(side=LEFT)
-        self.lados_var = IntVar(value=3)
-
-        spin_lados = Spinbox(self.frame_lados,
-                             from_=3, 
-                             to=12, 
-                             width=3,
-                             textvariable=self.lados_var, 
-                             command=self.escolher_num_lados)
-        
-        spin_lados.pack(side=LEFT, padx=4)
-
         # --- limpar  ---
         frame_acoes = ttk.Frame(organizar, style='Estilo_Frame.TFrame')
         frame_acoes.pack(side=LEFT, **margens)
@@ -123,10 +107,12 @@ class ProgramaPrincipal:
         self.canvas.bind('<ButtonPress-1>', self.iniciar_figura_nova)
         self.canvas.bind('<B1-Motion>', self.atualizar_figura_nova)
         self.canvas.bind('<ButtonRelease-1>', self.incluir_figura_nova)
+        self.canvas.bind("<Double-Button-1>", self.on_double_click)
 
     def iniciar_figura_nova(self, event):
         self.ini_x, self.ini_y = event.x, event.y
         c = (event.x, event.y, event.x, event.y)
+        pontosPoligonos = [event.x, event.y]
         tipo = self.tipo_figura_var.get()
         match tipo:
             case "Linha":
@@ -140,18 +126,14 @@ class ProgramaPrincipal:
             case "Retângulo":
                 self.figura_nova = Retangulo(*c, self.cor_borda, self.cor_preenchimento, self.tamEspessura)
             case "Polígono":
-                self.figura_nova = Poligono(event.x, event.y, 0, self.num_lados, self.cor_borda, self.cor_preenchimento, self.tamEspessura)
+                self.figura_nova = Poligono(pontosPoligonos, self.cor_borda, self.cor_preenchimento, self.tamEspessura)
 
     def atualizar_figura_nova(self, event):
         if not self.figura_nova:
             return
-        if isinstance(self.figura_nova, Rabisco):
+        elif isinstance(self.figura_nova, Rabisco):
             self.figura_nova.pontos.append((event.x, event.y))
-        elif isinstance(self.figura_nova, Poligono):
-            dx = event.x - self.figura_nova.centro_x
-            dy = event.y - self.figura_nova.centro_y
-            self.figura_nova.raio = (dx**2 + dy**2) ** 0.5
-        else:
+        else :
             self.figura_nova.x2 = event.x
             self.figura_nova.y2 = event.y
         self.desenhar()
@@ -184,19 +166,13 @@ class ProgramaPrincipal:
     def escolher_tamEspessura(self, event):
         self.tamEspessura = int(event.widget.get())
 
-    def escolher_num_lados(self):
-        self.num_lados = self.lados_var.get()
-
-    def atualizar_visibilidade_lados(self, *args):
-        if self.tipo_figura_var.get() == "Polígono":
-            self.frame_lados.pack(side=LEFT, padx=4, pady=5)
-        else:
-            self.frame_lados.pack_forget()
-
     def limpar_tela(self):
         self.figuras.clear()
         self.figura_nova = None
         self.canvas.delete("all")
+    
+    def on_double_click(event) :
+        
 
 ICONE_BASE64 = """
 iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAADs0lEQVR4nO2bW1bjMBBEnZzZDY9FwLonixgm62E+OGIUY9mS9aruqvvFD0ZRXVUrAS5LR55e3j57Pp+F+8ft0uvZTR+swMfQUogmD1Lwc2ghQtUDFDwGNSKc+kYFj8kZEa6l36DwcTmTTZEACh+f0oyyKkPB2yRnJBw2gMK3S052uwIofPscZVh8CRS+SAqg0++HvSw3BVD4/khl+kMAhe+XrWx1ByDnQQCdfv+sM1YDkPMtgE4/D3HWagByrsui089IyFwNQI4EIIdegL9/fs9ewlSumv+8PL28fVI3QDj9zC1ALYCQAPTQCrCufdYxQCuA+EICkEMpAGvdb0EpQApGMSQAOXQCMJ7yPegEOIJNEAlADpUAbKc7ByoBcmEShUYAplBLoBFAbCMBErA0BoUALGGegUIAkUYC7MDQHO4FYAixBvcCiH0kADmuBWhR/95HiGsBxDESgBy3ArSsbs9j4NL7fwM9b94Inl/fuz6/ewP0fgGeGbF33RsgRm2Qx8hDM/QOoDY4ZvQeDW2AGLXBI7MOx7R3AWqD/8zci6lvAyXB/D2YNgLWsI2E2cEHYD4IQtmQESC9VpgGiPHaBkjBB2AaIAZxo2pBfU2QDRBjvQ1Qgw9ANkAM+gbuYWHt8AIsi42NXGNlzfAjYA36SLASfMBEA8QgbzDy2lKYa4AYlDawGHzAXAPEIGw8whpqMC2AqMe0AAgjAGENNZgWQNQjAcgxKwBS9SKtpRSzAog2SAByJAA5JgVAnLmIa8rBpACiHRKAHHMCIFct8tpSmBOgNdZ/mVPLr9kLmEUcfPja4gmuxVQDtAoodepbtIE1iagaICdgtjYw1QA1lJ5ulruBmT8JO3sia4Oc9XNH4boBWoTw/PpuJswzuBSgR2heJTAxAkpqeERQueuxII2bBhhZ1RaCzcWFADMC8XI3MC0AQgizf34t8AKk5i3SxqfWYuHDJHOfBCIFH2P1E0T4BohBDT/GwhpjoN8GhtNkbVMDFtYP3wDIm3eEhbVDN4DoD3wDiL5IAHIkADkSgBwJQI4EIOd6/7hdZi9CzOH+cbuoAciRAORIAHKuy/I1C2YvRIwlZK4GIOdbALUAD3HWagByHgRQC/hnnbEagJwfAqgF/LKV7WYDSAJ/pDJNjgBJ4Ie9LHUHIGdXALWAfY4yPGwASWCXnOyKwtWfkNug5NAW3QHUBviUZlR8CZQEuJzJpipMjQQMag5lk9MsEebQoo2b1rlEGEPLMdx1nkuINvS8d/0DPxM1mEiFzwwAAAAASUVORK5CYII=
