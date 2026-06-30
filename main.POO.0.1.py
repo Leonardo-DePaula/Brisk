@@ -1,3 +1,4 @@
+import math
 from tkinter import *
 from tkinter import ttk
 from tkinter.colorchooser import askcolor
@@ -100,15 +101,15 @@ class ProgramaPrincipal:
 
     def criar_canvas(self):
         self.canvas = Canvas(self.janela, 
-                             bg='white', 
-                             width=janela.winfo_screenwidth(), 
-                             height=janela.winfo_screenheight())
+                            bg='white', 
+                            width=janela.winfo_screenwidth(), 
+                            height=janela.winfo_screenheight())
         
         self.canvas.pack(fill=BOTH, expand=True)
         self.canvas.bind('<ButtonPress-1>', self.iniciar_figura_nova)
         self.canvas.bind('<B1-Motion>', self.atualizar_figura_nova)
         self.canvas.bind('<ButtonRelease-1>', self.incluir_figura_nova)
-        self.canvas.bind("<Double-Button-1>", self.on_double_click)
+        self.canvas.bind('<Motion>', self.atualizar_preview_poligono)
 
     def iniciar_figura_nova(self, event):
         self.ini_x, self.ini_y = event.x, event.y
@@ -135,23 +136,25 @@ class ProgramaPrincipal:
                         self.tamEspessura
                     )
                 else:
-                    self.poligono_em_construcao.pontosPoligonos.extend([event.x, event.y])
+                    pontos = self.poligono_em_construcao.pontosPoligonos
+                    primeiro_x, primeiro_y = pontos[0], pontos[1]
+                    distancia = math.hypot(event.x - primeiro_x, event.y - primeiro_y)
+
+                    if len(pontos) >= 6 and distancia <= 8:
+                        self.fechar_poligono()
+                    else:
+                        pontos.extend([event.x, event.y])
 
                 self.desenhar()
 
     def atualizar_figura_nova(self, event):
-        if self.poligono_em_construcao:
-            self.poligono_preview = (event.x, event.y)
-            self.desenhar()
-            return
-        
         if not self.figura_nova:
             return
         
         elif isinstance(self.figura_nova, Rabisco):
             self.figura_nova.pontos.append((event.x, event.y))
 
-        else :
+        else:
             self.figura_nova.x2 = event.x
             self.figura_nova.y2 = event.y
             
@@ -193,6 +196,12 @@ class ProgramaPrincipal:
                     dash=(4, 2)
                 )
 
+            raio_destaque = 4
+            self.canvas.create_oval(
+                pontos[0] - raio_destaque, pontos[1] - raio_destaque,
+                pontos[0] + raio_destaque, pontos[1] + raio_destaque,
+                outline="red", width=1
+            )
     def escolher_cor_pr(self):
         cor = askcolor()[1]
         if cor:
@@ -218,24 +227,15 @@ class ProgramaPrincipal:
 
         self.canvas.delete("all")
 
-    def on_double_click(self, event):
+    def fechar_poligono(self):
+        self.figuras.append(self.poligono_em_construcao)
+        self.poligono_em_construcao = None
+        self.poligono_preview = None
+
+    def atualizar_preview_poligono(self, event):
         if self.poligono_em_construcao is None:
             return
-
-        if len(self.poligono_em_construcao.pontosPoligonos) >= 6:
-            self.figuras.append(self.poligono_em_construcao)
-
-            pontos = self.poligono_em_construcao.pontosPoligonos
-
-            # fecha
-            self.canvas.create_line(
-                pontos[-2], pontos[-1],
-                pontos[0], pontos[1],
-                fill=self.poligono_em_construcao.cor_borda,
-                width=self.poligono_em_construcao.tamEspessura
-            )
-
-        self.poligono_em_construcao = self.poligono_preview = None
+        self.poligono_preview = (event.x, event.y)
         self.desenhar()
 
 ICONE_BASE64 = """
