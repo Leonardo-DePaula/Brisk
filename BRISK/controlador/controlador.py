@@ -1,6 +1,6 @@
 import math
 from tkinter.colorchooser import askcolor
-from visao.interface import *
+from visao.Interface import *
 from modelo.figuras import *
 
 class Controlador:
