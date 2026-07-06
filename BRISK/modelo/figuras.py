@@ -1,0 +1,82 @@
+class Figura:
+    def __init__(self, cor_preenchimento, cor_borda):
+        self.cor_preenchimento = cor_preenchimento
+        self.cor_borda = cor_borda
+
+    def desenhar(self, canvas, dash=None):
+        pass
+
+class Linha(Figura):
+    def __init__(self, x1, y1, x2, y2, cor_borda, tamEspessura):
+        super().__init__("", cor_borda)
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        canvas.create_line(self.x1, self.y1, self.x2, self.y2, 
+                           fill=self.cor_borda, 
+                           width=self.tamEspessura, 
+                           dash=dash)
+        
+class Circulo(Figura):
+    def __init__(self, x1, y1, x2, y2, cor_borda, cor_preenchimento, tamEspessura):
+        super().__init__(cor_preenchimento, cor_borda)
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        raio = ((self.x2 - self.x1)**2 + (self.y2 - self.y1)**2) ** 0.5
+        canvas.create_oval(self.x1 - raio, self.y1 - raio, self.x1 + raio, self.y1 + raio, 
+                           fill=self.cor_preenchimento, 
+                           outline=self.cor_borda, 
+                           width=self.tamEspessura, 
+                           dash=dash)
+
+class Oval(Figura):
+    def __init__(self, x1, y1, x2, y2, cor_borda, cor_preenchimento, tamEspessura):
+        super().__init__(cor_preenchimento, cor_borda)
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        canvas.create_oval(self.x1, self.y1, self.x2, self.y2,
+                           fill=self.cor_preenchimento,
+                           outline=self.cor_borda,
+                           width=self.tamEspessura,
+                           dash=dash)
+        
+class Rabisco(Figura):
+    def __init__(self, pontos, cor_borda, tamEspessura):
+        super().__init__("", cor_borda)
+        self.pontos = pontos
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        if len(self.pontos) > 1:
+            canvas.create_line(self.pontos, fill=self.cor_borda, width=self.tamEspessura, dash=dash)
+
+class Retangulo(Figura):
+    def __init__(self, x1, y1, x2, y2, cor_borda, cor_preenchimento, tamEspessura):
+        super().__init__(cor_preenchimento, cor_borda)
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        canvas.create_rectangle(self.x1, self.y1, self.x2, self.y2,
+                                 fill=self.cor_preenchimento,
+                                 outline=self.cor_borda,
+                                 width=self.tamEspessura, 
+                                 dash=dash)
+
+class Poligono(Figura):
+    def __init__(self, pontosPoligonos, cor_borda, cor_preenchimento, tamEspessura):
+        super().__init__(cor_preenchimento, cor_borda)
+        self.pontosPoligonos = pontosPoligonos
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        canvas.create_polygon(*self.pontosPoligonos,
+                           fill=self.cor_preenchimento,
+                           outline=self.cor_borda,
+                           width=self.tamEspessura, 
+                           dash=dash)
