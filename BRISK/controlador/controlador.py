@@ -60,11 +60,6 @@ class Controlador:
         self.ferramenta = FERRAMENTAS[tipo](self)
         self.ferramenta.iniciar(evento)
 
-    def iniciar_desenho(self, evento):
-        tipo = self.interface.tipo_figura_var.get()
-        self.ferramenta = FERRAMENTAS[tipo](self)
-        self.ferramenta.iniciar(evento)
-
     def atualizar_desenho(self, evento):
        self.ferramenta.atualizar(evento)
 
