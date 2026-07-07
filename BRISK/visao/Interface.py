@@ -8,55 +8,55 @@ class Interface:
     def __init__(self, janela):
         self.janela = janela
         self.janela.title("Brisk - App de Desenhos")
-
+ 
         self.icone = PhotoImage(data=ICONE_BASE64)
         self.janela.iconphoto(True, self.icone)
-
+ 
         self.style = ttk.Style()
         self.style.configure(
             'Estilo_Frame.TFrame',
             background="#2b2b2b"
         )
-
+ 
         self.style.configure(
             'Estilo_Rotulo.TLabel',
             background="#2b2b2b",
             foreground="white"
         )
-
+ 
         self.barra = Frame(
             self.janela,
             bg="#2b2b2b"
         )
         self.barra.pack(fill=X)
-
+ 
         self.criar_interface()
         self.criar_canvas()
-
+ 
     def criar_interface(self):
         margens = {"padx": 4, "pady": 5}
-
+ 
         organizar = ttk.Frame(
             self.barra,
             style='Estilo_Frame.TFrame'
         )
         organizar.grid(column=0, row=0, sticky=W)
-
+ 
         # -------- Ferramenta --------
         frame_ferramenta = ttk.Frame(
             organizar,
             style='Estilo_Frame.TFrame'
         )
         frame_ferramenta.pack(side=LEFT, **margens)
-
+ 
         ttk.Label(
             frame_ferramenta,
             text='Ferramenta:',
             style='Estilo_Rotulo.TLabel'
         ).pack(side=LEFT)
-
+ 
         self.tipo_figura_var = StringVar(self.janela)
-
+ 
         self.option_menu = ttk.OptionMenu(
             frame_ferramenta,
             self.tipo_figura_var,
@@ -68,52 +68,52 @@ class Interface:
             'Oval',
             'Polígono'
         )
-
+ 
         self.option_menu.pack(side=LEFT, padx=4)
-
+ 
         # -------- Cores --------
         frame_cores = ttk.Frame(
             organizar,
             style='Estilo_Frame.TFrame'
         )
         frame_cores.pack(side=LEFT, **margens)
-
+ 
         ttk.Label(
             frame_cores,
             text='Preenchimento:',
             style='Estilo_Rotulo.TLabel'
         ).pack(side=LEFT)
-
+ 
         self.swatch_preenchimento = Button(
             frame_cores,
             bg="white",
             width=2,
             relief="ridge"
         )
-
+ 
         self.swatch_preenchimento.pack(
             side=LEFT,
             padx=(2, 10)
         )
-
+ 
         ttk.Label(
             frame_cores,
             text='Borda:',
             style='Estilo_Rotulo.TLabel'
         ).pack(side=LEFT)
-
+ 
         self.swatch_borda = Button(
             frame_cores,
             bg="black",
             width=2,
             relief="ridge"
         )
-
+ 
         self.swatch_borda.pack(
             side=LEFT,
             padx=2
         )
-
+ 
         # -------- Espessura --------
         frame_espessura = ttk.Frame(
             organizar,
@@ -123,13 +123,13 @@ class Interface:
             side=LEFT,
             **margens
         )
-
+ 
         ttk.Label(
             frame_espessura,
             text='Espessura:',
             style='Estilo_Rotulo.TLabel'
         ).pack(side=LEFT)
-
+ 
         self.tamanho_espessura_esc = ttk.Scale(
             frame_espessura,
             from_=1,
@@ -137,14 +137,14 @@ class Interface:
             orient=HORIZONTAL,
             length=80
         )
-
+ 
         self.tamanho_espessura_esc.set(1)
         self.tamanho_espessura_esc.pack(
             side=LEFT,
             padx=4
         )
-
-        # -------- Limpar --------
+ 
+        # -------- Limpar / Salvar / Abrir --------
         frame_acoes = ttk.Frame(
             organizar,
             style='Estilo_Frame.TFrame'
@@ -153,14 +153,28 @@ class Interface:
             side=LEFT,
             **margens
         )
-
+ 
         self.botao_limpar = ttk.Button(
             frame_acoes,
             text="Limpar"
         )
-
+ 
         self.botao_limpar.pack(side=LEFT)
-
+ 
+        self.botao_salvar = ttk.Button(
+            frame_acoes,
+            text="Salvar"
+        )
+ 
+        self.botao_salvar.pack(side=LEFT, padx=(4, 0))
+ 
+        self.botao_abrir = ttk.Button(
+            frame_acoes,
+            text="Abrir"
+        )
+ 
+        self.botao_abrir.pack(side=LEFT, padx=(4, 0))
+ 
     def criar_canvas(self):
         self.canvas = Canvas(
             self.janela,
@@ -168,7 +182,7 @@ class Interface:
             width=self.janela.winfo_screenwidth(),
             height=self.janela.winfo_screenheight()
         )
-
+ 
         self.canvas.pack(
             fill=BOTH,
             expand=True
