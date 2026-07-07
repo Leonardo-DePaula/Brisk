@@ -1,22 +1,20 @@
 from tkinter.colorchooser import askcolor
+from tkinter import filedialog
 
 from visao.Interface import Interface
+from modelo.desenhos import *
 from modelo.figuras import *
 from controlador.ferramentas import *
 
 
-class Controlador:
+class Controlador(Desenhos):
 
     def __init__(self, janela):
 
         self.janela = janela
         self.interface = Interface(janela)
-
-        self.figuras = []
-
-        self.figura_nova = None
-        self.poligono_em_construcao = None
-        self.poligono_preview = None
+        
+        Desenhos.__init__(self)
 
         self.cor_preenchimento = ""
         self.cor_borda = "black"
@@ -46,6 +44,14 @@ class Controlador:
             command=self.limpar_tela
         )
 
+        self.interface.botao_salvar.config(
+            command=self.salvar_arquivo
+        )
+
+        self.interface.botao_abrir.config(
+            command=self.abrir_arquivo
+        )
+
         canvas = self.interface.canvas
 
         canvas.bind("<ButtonPress-1>", self.iniciar_desenho)
@@ -69,59 +75,6 @@ class Controlador:
     def atualizar_previsao(self, evento):
         self.ferramenta.prever(evento)
 
-    def desenhar(self, dash=None):
-
-        canvas = self.interface.canvas
-        canvas.delete("all")
-
-        for figura in self.figuras:
-            figura.desenhar(canvas)
-
-        if self.figura_nova:
-            self.figura_nova.desenhar(canvas, dash=(4, 2))
-
-        if self.poligono_em_construcao:
-
-            pontos = self.poligono_em_construcao.pontosPoligonos
-
-            if len(pontos) >= 4:
-                canvas.create_line(
-                    *pontos,
-                    fill=self.poligono_em_construcao.cor_borda,
-                    width=self.poligono_em_construcao.tamEspessura
-                )
-
-            if self.poligono_preview:
-                canvas.create_line(
-                    pontos[-2],
-                    pontos[-1],
-                    self.poligono_preview[0],
-                    self.poligono_preview[1],
-                    fill=self.poligono_em_construcao.cor_borda,
-                    width=self.poligono_em_construcao.tamEspessura,
-                    dash=(4, 2)
-                )
-
-            raio = 4
-
-            canvas.create_oval(
-                pontos[0] - raio,
-                pontos[1] - raio,
-                pontos[0] + raio,
-                pontos[1] + raio,
-                outline="red",
-                width=1
-            )
-
-    def fechar_poligono(self):
-
-        self.figuras.append(self.poligono_em_construcao)
-
-        self.poligono_em_construcao = None
-        self.poligono_preview = None
-
-        self.desenhar()
-
     def escolher_cor_preenchimento(self):
 
         cor = askcolor()[1]
@@ -142,12 +95,21 @@ class Controlador:
 
         self.tamEspessura = int(evento.widget.get())
 
-    def limpar_tela(self):
+    def salvar_arquivo(self):
 
-        self.figuras.clear()
+        caminho = filedialog.asksaveasfilename(
+            defaultextension=".brisk",
+            filetypes=[("Arquivo Brisk", "*.brisk")]
+        )
 
-        self.figura_nova = None
-        self.poligono_em_construcao = None
-        self.poligono_preview = None
+        if caminho:
+            self.salvar(caminho)
 
-        self.interface.canvas.delete("all")
+    def abrir_arquivo(self):
+
+        caminho = filedialog.askopenfilename(
+            filetypes=[("Arquivo Brisk", "*.brisk")]
+        )
+
+        if caminho:
+            self.abrir(caminho)
