@@ -195,14 +195,20 @@ class FerramentaSelecionar(Ferramenta):
 
     def iniciar(self, evento):
 
-        self.controlador.figura_selecionada = None
         self.controlador.posicao_anterior = (evento.x, evento.y)
+
+        self.controlador.figura_selecionada = None
+
+        encontrado = False
 
         for figura in reversed(self.controlador.figuras):
 
-            if figura.contem(evento.x, evento.y):
+            if figura.contem(evento.x, evento.y) and not encontrado:
+
                 self.controlador.figura_selecionada = figura
-                break
+                encontrado = True
+
+        self.controlador.desenhar()
 
     def atualizar(self, evento):
 
@@ -220,8 +226,7 @@ class FerramentaSelecionar(Ferramenta):
             self.controlador.desenhar()
 
     def finalizar(self, evento):
-
-        self.controlador.figura_selecionada = None
+        pass
 
     def apagar(self, evento):
 
