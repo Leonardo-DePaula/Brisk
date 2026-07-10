@@ -1,6 +1,7 @@
 from modelo.figuras import *
 import math
 
+
 class Ferramenta:
 
     def __init__(self, controlador):
@@ -227,6 +228,11 @@ class FerramentaSelecionar(Ferramenta):
 
                 self.controlador.figura_selecionada = figura
                 encontrado = True
+
+        if self.controlador.figura_selecionada:
+            self.controlador.atualizar_controles_com_figura(
+                self.controlador.figura_selecionada
+            )
 
         self.controlador.desenhar()
 
