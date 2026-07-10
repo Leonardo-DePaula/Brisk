@@ -2,20 +2,28 @@ import json
 
 from modelo.figuras import criarFiguraDeDicionario
 
-class Desenhos :
-    def __init__(self) :
+
+class Desenhos:
+
+    def __init__(self):
+
         self.figuras = []
         self.figura_nova = self.poligono_em_construcao = self.poligono_preview = None
         self.figura_selecionada = None
         self.posicao_anterior = None
-    
+
     def desenhar(self, dash=None):
 
         canvas = self.interface.canvas
         canvas.delete("all")
 
         for figura in self.figuras:
-            figura.desenhar(canvas)
+
+            if figura == self.figura_selecionada:
+                figura.desenhar(canvas, dash=(4, 2))
+
+            else:
+                figura.desenhar(canvas)
 
         if self.figura_nova:
             self.figura_nova.desenhar(canvas, dash=(4, 2))
@@ -25,6 +33,7 @@ class Desenhos :
             pontos = self.poligono_em_construcao.pontosPoligonos
 
             if len(pontos) >= 4:
+
                 canvas.create_line(
                     *pontos,
                     fill=self.poligono_em_construcao.cor_borda,
@@ -32,6 +41,7 @@ class Desenhos :
                 )
 
             if self.poligono_preview:
+
                 canvas.create_line(
                     pontos[-2],
                     pontos[-1],
@@ -69,6 +79,8 @@ class Desenhos :
         self.figura_nova = None
         self.poligono_em_construcao = None
         self.poligono_preview = None
+        self.figura_selecionada = None
+        self.posicao_anterior = None
 
         self.interface.canvas.delete("all")
 
@@ -89,5 +101,7 @@ class Desenhos :
         self.figura_nova = None
         self.poligono_em_construcao = None
         self.poligono_preview = None
+        self.figura_selecionada = None
+        self.posicao_anterior = None
 
         self.desenhar()
