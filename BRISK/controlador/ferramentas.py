@@ -1,7 +1,6 @@
 from modelo.figuras import *
 import math
 
-
 class Ferramenta:
 
     def __init__(self, controlador):
