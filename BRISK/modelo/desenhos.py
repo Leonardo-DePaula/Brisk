@@ -6,6 +6,8 @@ class Desenhos :
     def __init__(self) :
         self.figuras = []
         self.figura_nova = self.poligono_em_construcao = self.poligono_preview = None
+        self.figura_selecionada = None
+        self.posicao_anterior = None
     
     def desenhar(self, dash=None):
 
