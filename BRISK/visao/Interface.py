@@ -8,6 +8,7 @@ class Interface:
     def __init__(self, janela):
         self.janela = janela
         self.janela.title("Brisk - App de Desenhos")
+        self.janela.state('zoomed')
  
         self.icone = PhotoImage(data=ICONE_BASE64)
         self.janela.iconphoto(True, self.icone)
@@ -40,8 +41,34 @@ class Interface:
             self.barra,
             style='Estilo_Frame.TFrame'
         )
-        organizar.grid(column=0, row=0, sticky=W)
+
+        organizar.pack(side=LEFT, anchor=W)
+
+        frame_acoes = ttk.Frame(
+            organizar,
+            style='Estilo_Frame.TFrame'
+        )
+        frame_acoes.pack(
+            side=LEFT,
+            **margens
+        )
+
+        # -------- Abrir e Salvar --------
+
+        self.botao_abrir = ttk.Button(
+            frame_acoes,
+            text="Abrir"
+        )
  
+        self.botao_abrir.pack(side=LEFT, padx=(4, 0))
+    
+        self.botao_salvar = ttk.Button(
+            frame_acoes,
+            text="Salvar"
+        )
+ 
+        self.botao_salvar.pack(side=LEFT, padx=(4, 0))
+
         # -------- Ferramenta --------
         frame_ferramenta = ttk.Frame(
             organizar,
@@ -61,7 +88,7 @@ class Interface:
             frame_ferramenta,
             self.tipo_figura_var,
             'Linha',
-            'Selecionar',
+            'Seleção',
             'Linha',
             'Rabisco',
             'Retângulo',
@@ -145,36 +172,13 @@ class Interface:
             padx=4
         )
  
-        # -------- Limpar / Salvar / Abrir --------
-        frame_acoes = ttk.Frame(
-            organizar,
-            style='Estilo_Frame.TFrame'
-        )
-        frame_acoes.pack(
-            side=LEFT,
-            **margens
-        )
- 
+        # -------- Limpar --------
         self.botao_limpar = ttk.Button(
-            frame_acoes,
+            organizar,
             text="Limpar"
         )
  
-        self.botao_limpar.pack(side=LEFT)
- 
-        self.botao_salvar = ttk.Button(
-            frame_acoes,
-            text="Salvar"
-        )
- 
-        self.botao_salvar.pack(side=LEFT, padx=(4, 0))
- 
-        self.botao_abrir = ttk.Button(
-            frame_acoes,
-            text="Abrir"
-        )
- 
-        self.botao_abrir.pack(side=LEFT, padx=(4, 0))
+        self.botao_limpar.pack(side=LEFT, padx=0, pady=5)
  
     def criar_canvas(self):
         self.canvas = Canvas(
