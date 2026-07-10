@@ -104,6 +104,11 @@ class Controlador(Desenhos):
     def mover_para_fundo(self, evento):
         self.ferramenta.mover_para_fundo(evento)
 
+    def atualizar_controles_com_figura(self, figura):
+
+        self.tamEspessura = figura.tamEspessura
+        self.interface.tamanho_espessura_esc.set(figura.tamEspessura)
+
     def escolher_cor_preenchimento(self):
 
         cor = askcolor()[1]
