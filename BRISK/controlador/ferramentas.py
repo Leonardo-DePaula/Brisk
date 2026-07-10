@@ -1,7 +1,6 @@
 from modelo.figuras import *
 import math
 
-
 class Ferramenta:
 
     def __init__(self, controlador):
@@ -20,6 +19,24 @@ class Ferramenta:
         pass
     
     def apagar(self, evento):
+        pass
+
+    def copiar(self, evento):
+        pass
+
+    def colar(self, evento):
+        pass
+
+    def mover_para_frente(self, evento):
+        pass
+
+    def mover_para_tras(self, evento):
+        pass
+
+    def mover_para_topo(self, evento):
+        pass
+
+    def mover_para_fundo(self, evento):
         pass
 
 
@@ -169,7 +186,10 @@ class FerramentaPoligono(Ferramenta):
                 evento.y - py
             )
 
-            if len(pontos) >= 6 and distancia <= 8:
+            raio_fechamento = max(4, self.controlador.tamEspessura + 3)
+            tolerancia_fechamento = raio_fechamento * 2
+
+            if len(pontos) >= 6 and distancia <= tolerancia_fechamento:
                 self.controlador.fechar_poligono()
 
             else:
@@ -240,6 +260,78 @@ class FerramentaSelecionar(Ferramenta):
 
             self.controlador.desenhar()
 
+    def copiar(self, evento):
+
+        if self.controlador.figura_selecionada:
+
+            self.controlador.buffer_copia = self.controlador.figura_selecionada.copiar()
+
+    def colar(self, evento):
+
+        if self.controlador.buffer_copia:
+
+            nova_figura = self.controlador.buffer_copia.copiar()
+            nova_figura.mover(15, 15)
+
+            self.controlador.figuras.append(nova_figura)
+            self.controlador.figura_selecionada = nova_figura
+            self.controlador.buffer_copia = nova_figura.copiar()
+
+            self.controlador.desenhar()
+
+    def mover_para_frente(self, evento):
+
+        figura = self.controlador.figura_selecionada
+
+        if figura in self.controlador.figuras:
+
+            idx = self.controlador.figuras.index(figura)
+
+            if idx < len(self.controlador.figuras) - 1:
+
+                self.controlador.figuras[idx], self.controlador.figuras[idx + 1] = \
+                    self.controlador.figuras[idx + 1], self.controlador.figuras[idx]
+
+                self.controlador.desenhar()
+
+    def mover_para_tras(self, evento):
+
+        figura = self.controlador.figura_selecionada
+
+        if figura in self.controlador.figuras:
+
+            idx = self.controlador.figuras.index(figura)
+
+            if idx > 0:
+
+                self.controlador.figuras[idx], self.controlador.figuras[idx - 1] = \
+                    self.controlador.figuras[idx - 1], self.controlador.figuras[idx]
+
+                self.controlador.desenhar()
+
+    def mover_para_topo(self, evento):
+
+        figura = self.controlador.figura_selecionada
+
+        if figura in self.controlador.figuras:
+
+            self.controlador.figuras.remove(figura)
+            self.controlador.figuras.append(figura)
+
+            self.controlador.desenhar()
+
+    def mover_para_fundo(self, evento):
+
+        figura = self.controlador.figura_selecionada
+
+        if figura in self.controlador.figuras:
+
+            self.controlador.figuras.remove(figura)
+            self.controlador.figuras.insert(0, figura)
+
+            self.controlador.desenhar()
+
+
 FERRAMENTAS = {
     "Linha": FerramentaLinha,
     "Retângulo": FerramentaRetangulo,
@@ -247,5 +339,5 @@ FERRAMENTAS = {
     "Oval": FerramentaOval,
     "Rabisco": FerramentaRabisco,
     "Polígono": FerramentaPoligono,
-    "Selecionar": FerramentaSelecionar,
+    "Seleção": FerramentaSelecionar,
 }
