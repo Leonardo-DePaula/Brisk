@@ -41,7 +41,7 @@ class Controlador(Desenhos):
         )
 
         self.interface.botao_limpar.config(
-            command=self.limpar_tela
+            command=self.limpar
         )
 
         self.interface.botao_salvar.config(
