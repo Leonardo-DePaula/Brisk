@@ -1,4 +1,6 @@
 import math
+import copy
+
 
 class Figura:
     def __init__(self, cor_preenchimento, cor_borda):
@@ -39,6 +41,12 @@ class Figura:
     def mover(self, dx, dy):
         pass
 
+    def obter_bbox(self):
+        return None
+
+    def copiar(self):
+        return copy.deepcopy(self)
+
 class Linha(Figura):
     def __init__(self, x1, y1, x2, y2, cor_borda, tamEspessura):
         super().__init__("", cor_borda)
@@ -68,6 +76,12 @@ class Linha(Figura):
         self.y1 += dy
         self.x2 += dx
         self.y2 += dy
+
+    def obter_bbox(self):
+        return (
+            min(self.x1, self.x2), min(self.y1, self.y2),
+            max(self.x1, self.x2), max(self.y1, self.y2)
+        )
 
     def paraDicionario(self):
         return {
@@ -119,6 +133,13 @@ class Circulo(Figura):
         self.x2 += dx
         self.y2 += dy
 
+    def obter_bbox(self):
+        raio = ((self.x2 - self.x1)**2 + (self.y2 - self.y1)**2) ** 0.5
+        return (
+            self.x1 - raio, self.y1 - raio,
+            self.x1 + raio, self.y1 + raio
+        )
+
     def paraDicionario(self):
         return {
             "tipo": "Circulo",
@@ -164,6 +185,12 @@ class Oval(Figura):
         self.x2 += dx
         self.y2 += dy
 
+    def obter_bbox(self):
+        return (
+            min(self.x1, self.x2), min(self.y1, self.y2),
+            max(self.x1, self.x2), max(self.y1, self.y2)
+        )
+
     def paraDicionario(self):
         return {
             "tipo": "Oval",
@@ -206,6 +233,13 @@ class Rabisco(Figura):
 
         self.pontos = novos_pontos
 
+    def obter_bbox(self):
+
+        xs = [p[0] for p in self.pontos]
+        ys = [p[1] for p in self.pontos]
+
+        return (min(xs), min(ys), max(xs), max(ys))
+
     def paraDicionario(self):
         return {
             "tipo": "Rabisco",
@@ -244,6 +278,12 @@ class Retangulo(Figura):
         self.y1 += dy
         self.x2 += dx
         self.y2 += dy
+
+    def obter_bbox(self):
+        return (
+            min(self.x1, self.x2), min(self.y1, self.y2),
+            max(self.x1, self.x2), max(self.y1, self.y2)
+        )
 
     def paraDicionario(self):
         return {
@@ -323,6 +363,13 @@ class Poligono(Figura):
             novos_pontos.append(self.pontosPoligonos[i + 1] + dy)
 
         self.pontosPoligonos = novos_pontos
+
+    def obter_bbox(self):
+
+        xs = self.pontosPoligonos[0::2]
+        ys = self.pontosPoligonos[1::2]
+
+        return (min(xs), min(ys), max(xs), max(ys))
 
     def paraDicionario(self):
         return {
