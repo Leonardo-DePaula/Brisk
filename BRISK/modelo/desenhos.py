@@ -11,6 +11,7 @@ class Desenhos:
         self.figura_nova = self.poligono_em_construcao = self.poligono_preview = None
         self.figura_selecionada = None
         self.posicao_anterior = None
+        self.buffer_copia = None
 
     def desenhar(self, dash=None):
 
@@ -19,11 +20,10 @@ class Desenhos:
 
         for figura in self.figuras:
 
-            if figura == self.figura_selecionada:
-                figura.desenhar(canvas, dash=(4, 2))
+            figura.desenhar(canvas)
 
-            else:
-                figura.desenhar(canvas)
+            if figura == self.figura_selecionada:
+                self.desenhar_caixa_selecao(figura, canvas)
 
         if self.figura_nova:
             self.figura_nova.desenhar(canvas, dash=(4, 2))
@@ -52,7 +52,7 @@ class Desenhos:
                     dash=(4, 2)
                 )
 
-            raio = 4
+            raio = max(4, self.poligono_em_construcao.tamEspessura + 3)
 
             canvas.create_oval(
                 pontos[0] - raio,
@@ -62,6 +62,27 @@ class Desenhos:
                 outline="red",
                 width=1
             )
+
+    def desenhar_caixa_selecao(self, figura, canvas):
+
+        bbox = figura.obter_bbox()
+
+        if bbox is None:
+            return
+
+        x1, y1, x2, y2 = bbox
+
+        margem = 6 + getattr(figura, "tamEspessura", 1)
+
+        canvas.create_rectangle(
+            x1 - margem,
+            y1 - margem,
+            x2 + margem,
+            y2 + margem,
+            outline="red",
+            width=1,
+            dash=(4, 2)
+        )
 
     def fechar_poligono(self):
 
@@ -81,6 +102,7 @@ class Desenhos:
         self.poligono_preview = None
         self.figura_selecionada = None
         self.posicao_anterior = None
+        self.buffer_copia = None
 
         self.interface.canvas.delete("all")
 
