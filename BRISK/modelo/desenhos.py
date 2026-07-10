@@ -93,7 +93,7 @@ class Desenhos:
 
         self.desenhar()
 
-    def limpar_tela(self):
+    def limpar(self):
 
         self.figuras.clear()
 
