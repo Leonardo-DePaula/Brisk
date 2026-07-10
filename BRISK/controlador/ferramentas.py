@@ -5,6 +5,7 @@ class Ferramenta:
 
     def __init__(self, controlador):
         self.controlador = controlador
+        self.controlador.figura_selecionada = None
 
     def iniciar(self, evento):
         pass
@@ -216,8 +217,6 @@ class FerramentaSelecionar(Ferramenta):
     def iniciar(self, evento):
 
         self.controlador.posicao_anterior = (evento.x, evento.y)
-
-        self.controlador.figura_selecionada = None
 
         encontrado = False
 
