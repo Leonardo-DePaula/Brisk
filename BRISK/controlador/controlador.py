@@ -60,6 +60,12 @@ class Controlador(Desenhos):
         canvas.bind("<Motion>", self.atualizar_previsao)
 
         self.janela.bind("<Delete>", self.apagar_figura)
+        self.janela.bind("<Control-c>", self.copiar_figura)
+        self.janela.bind("<Control-v>", self.colar_figura)
+        self.janela.bind("<Right>", self.mover_para_frente)
+        self.janela.bind("<Left>", self.mover_para_tras)
+        self.janela.bind("<Up>", self.mover_para_topo)
+        self.janela.bind("<Down>", self.mover_para_fundo)
 
     def iniciar_desenho(self, evento):
 
@@ -80,6 +86,24 @@ class Controlador(Desenhos):
     def apagar_figura(self, evento):
         self.ferramenta.apagar(evento)
 
+    def copiar_figura(self, evento):
+        self.ferramenta.copiar(evento)
+
+    def colar_figura(self, evento):
+        self.ferramenta.colar(evento)
+
+    def mover_para_frente(self, evento):
+        self.ferramenta.mover_para_frente(evento)
+
+    def mover_para_tras(self, evento):
+        self.ferramenta.mover_para_tras(evento)
+
+    def mover_para_topo(self, evento):
+        self.ferramenta.mover_para_topo(evento)
+
+    def mover_para_fundo(self, evento):
+        self.ferramenta.mover_para_fundo(evento)
+
     def escolher_cor_preenchimento(self):
 
         cor = askcolor()[1]
@@ -87,6 +111,10 @@ class Controlador(Desenhos):
         if cor:
             self.cor_preenchimento = cor
             self.interface.swatch_preenchimento.config(bg=cor)
+
+            if self.figura_selecionada:
+                self.figura_selecionada.cor_preenchimento = cor
+                self.desenhar()
 
     def escolher_cor_borda(self):
 
@@ -96,9 +124,17 @@ class Controlador(Desenhos):
             self.cor_borda = cor
             self.interface.swatch_borda.config(bg=cor)
 
+            if self.figura_selecionada:
+                self.figura_selecionada.cor_borda = cor
+                self.desenhar()
+
     def escolher_espessura(self, evento):
 
         self.tamEspessura = int(evento.widget.get())
+
+        if self.figura_selecionada:
+            self.figura_selecionada.tamEspessura = self.tamEspessura
+            self.desenhar()
 
     def salvar_arquivo(self):
 
