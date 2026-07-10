@@ -18,6 +18,9 @@ class Ferramenta:
 
     def prever(self, evento):
         pass
+    
+    def apagar(self, evento):
+        pass
 
 
 class FerramentaLinha(Ferramenta):
@@ -188,6 +191,50 @@ class FerramentaPoligono(Ferramenta):
             self.controlador.desenhar()
 
 
+class FerramentaSelecionar(Ferramenta):
+
+    def iniciar(self, evento):
+
+        self.controlador.figura_selecionada = None
+        self.controlador.posicao_anterior = (evento.x, evento.y)
+
+        for figura in reversed(self.controlador.figuras):
+
+            if figura.contem(evento.x, evento.y):
+                self.controlador.figura_selecionada = figura
+                break
+
+    def atualizar(self, evento):
+
+        if self.controlador.figura_selecionada:
+
+            x_anterior, y_anterior = self.controlador.posicao_anterior
+
+            dx = evento.x - x_anterior
+            dy = evento.y - y_anterior
+
+            self.controlador.figura_selecionada.mover(dx, dy)
+
+            self.controlador.posicao_anterior = (evento.x, evento.y)
+
+            self.controlador.desenhar()
+
+    def finalizar(self, evento):
+
+        self.controlador.figura_selecionada = None
+
+    def apagar(self, evento):
+
+        if self.controlador.figura_selecionada:
+
+            self.controlador.figuras.remove(
+                self.controlador.figura_selecionada
+            )
+
+            self.controlador.figura_selecionada = None
+
+            self.controlador.desenhar()
+
 FERRAMENTAS = {
     "Linha": FerramentaLinha,
     "Retângulo": FerramentaRetangulo,
@@ -195,4 +242,5 @@ FERRAMENTAS = {
     "Oval": FerramentaOval,
     "Rabisco": FerramentaRabisco,
     "Polígono": FerramentaPoligono,
+    "Selecionar": FerramentaSelecionar,
 }
