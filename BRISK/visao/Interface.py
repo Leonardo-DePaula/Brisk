@@ -61,6 +61,7 @@ class Interface:
             frame_ferramenta,
             self.tipo_figura_var,
             'Linha',
+            'Selecionar',
             'Linha',
             'Rabisco',
             'Retângulo',
