@@ -13,7 +13,7 @@ class Controlador(Desenhos):
 
         self.janela = janela
         self.interface = Interface(janela)
-        
+
         Desenhos.__init__(self)
 
         self.cor_preenchimento = ""
@@ -59,6 +59,8 @@ class Controlador(Desenhos):
         canvas.bind("<ButtonRelease-1>", self.finalizar_desenho)
         canvas.bind("<Motion>", self.atualizar_previsao)
 
+        self.janela.bind("<Delete>", self.apagar_figura)
+
     def iniciar_desenho(self, evento):
 
         tipo = self.interface.tipo_figura_var.get()
@@ -67,13 +69,16 @@ class Controlador(Desenhos):
         self.ferramenta.iniciar(evento)
 
     def atualizar_desenho(self, evento):
-       self.ferramenta.atualizar(evento)
+        self.ferramenta.atualizar(evento)
 
     def finalizar_desenho(self, evento):
         self.ferramenta.finalizar(evento)
 
     def atualizar_previsao(self, evento):
         self.ferramenta.prever(evento)
+
+    def apagar_figura(self, evento):
+        self.ferramenta.apagar(evento)
 
     def escolher_cor_preenchimento(self):
 
