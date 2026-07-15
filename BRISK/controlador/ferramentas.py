@@ -6,6 +6,7 @@ class Ferramenta:
     def __init__(self, controlador):
         self.controlador = controlador
         self.controlador.figura_selecionada = None
+        self.controlador.figura_selecionadas = []
 
     def iniciar(self, evento):
         pass
@@ -224,20 +225,19 @@ class FerramentaSelecionar(Ferramenta):
 
             if figura.contem(evento.x, evento.y) and not encontrado:
 
-                self.controlador.figura_selecionada = figura
+                self.controlador.figura_selecionadas.append(figura)
                 encontrado = True
 
-        if self.controlador.figura_selecionada:
+        for i in range(0, len(self.controlador.figuras_selecionadas)) :
             self.controlador.atualizar_controles_com_figura(
-                self.controlador.figura_selecionada
-            )
+                    self.controlador.figura_selecionada[i]
+                )
 
         self.controlador.desenhar()
 
     def atualizar(self, evento):
 
-        if self.controlador.figura_selecionada:
-
+        for fig in self.controlador.figuras_selecionadas :
             x_anterior, y_anterior = self.controlador.posicao_anterior
 
             dx = evento.x - x_anterior
@@ -254,49 +254,51 @@ class FerramentaSelecionar(Ferramenta):
 
     def apagar(self, evento):
 
-        if self.controlador.figura_selecionada:
+        for i in range(0, len(self.controlador.figuras_selecionadas)) :
 
-            self.controlador.figuras.remove(
-                self.controlador.figura_selecionada
-            )
+                self.controlador.figuras.remove(
+                    self.controlador.figura_selecionadas[i]
+                )
 
-            self.controlador.figura_selecionada = None
+                self.controlador.figura_selecionadas[i] = None
 
-            self.controlador.desenhar()
+                self.controlador.desenhar()
 
     def copiar(self, evento):
 
-        if self.controlador.figura_selecionada:
+        for i in range(0, len(self.controlador.figuras_selecionadas)) :
 
-            self.controlador.buffer_copia = self.controlador.figura_selecionada.copiar()
+            self.controlador.buffer_copia = self.controlador.figura_selecionadas[i].copiar()
 
     def colar(self, evento):
 
-        if self.controlador.buffer_copia:
+        for i in range(0, len(self.controlador.figuras_selecionadas)) :
 
-            nova_figura = self.controlador.buffer_copia.copiar()
-            nova_figura.mover(15, 15)
+            if self.controlador.buffer_copia:
 
-            self.controlador.figuras.append(nova_figura)
-            self.controlador.figura_selecionada = nova_figura
-            self.controlador.buffer_copia = nova_figura.copiar()
+                nova_figura = self.controlador.buffer_copia.copiar()
+                nova_figura.mover(15, 15)
 
-            self.controlador.desenhar()
-
-    def mover_para_frente(self, evento):
-
-        figura = self.controlador.figura_selecionada
-
-        if figura in self.controlador.figuras:
-
-            idx = self.controlador.figuras.index(figura)
-
-            if idx < len(self.controlador.figuras) - 1:
-
-                self.controlador.figuras[idx], self.controlador.figuras[idx + 1] = \
-                    self.controlador.figuras[idx + 1], self.controlador.figuras[idx]
+                self.controlador.figuras.append(nova_figura)
+                self.controlador.figura_selecionadas[i] = nova_figura
+                self.controlador.buffer_copia = nova_figura.copiar()
 
                 self.controlador.desenhar()
+
+    def mover_para_frente(self, evento):
+        for i in range(0, len(self.controlador.figuras_selecionadas)) :
+            figura = self.controlador.figura_selecionadas[i]
+
+            if figura in self.controlador.figuras:
+
+                idx = self.controlador.figuras.index(figura)
+
+                if idx < len(self.controlador.figuras) - 1:
+
+                    self.controlador.figuras[idx], self.controlador.figuras[idx + 1] = \
+                        self.controlador.figuras[idx + 1], self.controlador.figuras[idx]
+
+                    self.controlador.desenhar()
 
     def mover_para_tras(self, evento):
 
