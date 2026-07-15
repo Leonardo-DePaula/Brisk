@@ -8,7 +8,7 @@ class Interface:
     def __init__(self, janela):
         self.janela = janela
         self.janela.title("Brisk - App de Desenhos")
-        self.janela.state('zoomed')
+        self.janela.state('normal')
  
         self.icone = PhotoImage(data=ICONE_BASE64)
         self.janela.iconphoto(True, self.icone)
