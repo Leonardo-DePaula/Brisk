@@ -53,7 +53,17 @@ class Figura:
         x1, y1, x2, y2 = bbox
 
         return not (x2 < rx1 or x1 > rx2 or y2 < ry1 or y1 > ry2)
+        
+    def contido_em_retangulo(self, rx1, ry1, rx2, ry2):
+        bbox = self.obter_bbox()
 
+        if bbox is None:
+            return False
+
+        x1, y1, x2, y2 = bbox
+
+        return x1 >= rx1 and x2 <= rx2 and y1 >= ry1 and y2 <= ry2
+    
     def copiar(self):
         return copy.deepcopy(self)
 
