@@ -510,6 +510,69 @@ class PoligonoRegular(Figura):
             "angulo_rotacao": self.angulo_rotacionar
         }
 
+class FiguraComposta(Figura):
+    def __init__(self, figuras):
+        self.figuras = figuras
+    
+    def desenhar(self, canvas, dash=None):
+        for figura in self.figuras:
+            figura.desenhar(canvas, dash=dash)
+    
+    def contem(self, x, y):
+        return any(figura.contem(x, y) for figura in self.figuras)
+    
+    def mover(self, dx, dy):
+        for figura in self.figuras:
+            figura.mover(dx, dy)
+    
+    def obter_bbox(self):
+        bboxes = [figura.obter_bbox() for figura in self.figuras if figura.obter_bbox()]
+        if not bboxes:
+            return None
+        xs1 = [b[0] for b in bboxes]
+        ys1 = [b[1] for b in bboxes]
+        xs2 = [b[2] for b in bboxes]
+        ys2 = [b[3] for b in bboxes]
+        return (min(xs1), min(ys1), max(xs2), max(ys2))
+    
+    @property
+    def cor_preenchimento(self):
+        if self.figuras:
+            return self.figuras[0].cor_preenchimento
+        return ""
+    
+    @cor_preenchimento.setter
+    def cor_preenchimento(self, valor):
+        for figura in self.figuras:
+            figura.cor_preenchimento = valor
+    
+    @property
+    def cor_borda(self):
+        if self.figuras:
+            return self.figuras[0].cor_borda
+        return "black"
+    
+    @cor_borda.setter
+    def cor_borda(self, valor):
+        for figura in self.figuras:
+            figura.cor_borda = valor
+    
+    @property
+    def tamEspessura(self):
+        if self.figuras:
+            return self.figuras[0].tamEspessura
+        return 1
+    
+    @tamEspessura.setter
+    def tamEspessura(self, valor):
+        for figura in self.figuras:
+            figura.tamEspessura = valor
+    
+    def paraDicionario(self):
+        return {
+            "tipo": "FiguraComposta",
+            "figuras": [figura.paraDicionario() for figura in self.figuras]
+        }
 
 def criarFiguraDeDicionario(dados):
 
@@ -551,7 +614,7 @@ def criarFiguraDeDicionario(dados):
                 dados["pontosPoligonos"], dados["cor_borda"],
                 dados["cor_preenchimento"], dados["tamEspessura"]
             )
-        
+
         case "PoligonoRegular":
             return PoligonoRegular(
                 dados["cx"],
@@ -562,4 +625,9 @@ def criarFiguraDeDicionario(dados):
                 dados["cor_preenchimento"],
                 dados["tamEspessura"],
                 dados.get("angulo_rotacao", 0.0)
+            )
+        
+        case "FiguraComposta":
+            return FiguraComposta(
+                [criarFiguraDeDicionario(item) for item in dados["figuras"]]
             )
