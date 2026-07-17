@@ -63,6 +63,8 @@ class Controlador(Desenhos):
         canvas.bind("<B1-Motion>", self.atualizar_desenho)
         canvas.bind("<ButtonRelease-1>", self.finalizar_desenho)
         canvas.bind("<Motion>", self.atualizar_previsao)
+        canvas.bind("<Button-3>", self.clique_direito)
+        canvas.bind("<Double-Button-1>", self.duplo_clique)
 
         self.janela.bind("<Delete>", self.apagar_figura)
         self.janela.bind("<Control-c>", self.copiar_figura)
@@ -111,6 +113,16 @@ class Controlador(Desenhos):
 
     def finalizar_desenho(self, evento):
         self.ferramenta.finalizar(evento)
+        self.clique_esquerdo(evento)
+
+    def clique_esquerdo(self, evento):
+        self.ferramenta.clique_esquerdo(evento)
+
+    def clique_direito(self, evento):
+        self.ferramenta.clique_direito(evento)
+
+    def duplo_clique(self, evento):
+        self.ferramenta.duplo_clique(evento)
 
     def atualizar_previsao(self, evento):
         self.ferramenta.prever(evento)
