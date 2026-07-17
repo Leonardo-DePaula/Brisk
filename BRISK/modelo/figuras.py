@@ -43,6 +43,16 @@ class Figura:
 
     def obter_bbox(self):
         return None
+    
+    def intersecta_retangulo(self, rx1, ry1, rx2, ry2):
+        bbox = self.obter_bbox()
+
+        if bbox is None:
+            return False
+
+        x1, y1, x2, y2 = bbox
+
+        return not (x2 < rx1 or x1 > rx2 or y2 < ry1 or y1 > ry2)
 
     def copiar(self):
         return copy.deepcopy(self)
