@@ -223,7 +223,7 @@ class Controlador(Desenhos):
         if caminho:
             self.abrir(caminho)
 
-      def agrupar_figuras(self, evento=None):
+    def agrupar_figuras(self, evento=None):
 
         if len(self.figuras_escolhidas) < 2:
             return
