@@ -17,6 +17,15 @@ class Ferramenta:
     def finalizar(self, evento):
         pass
 
+    def clique_esquerdo(self, evento):
+        pass
+
+    def clique_direito(self, evento):
+        pass
+
+    def duplo_clique(self, evento):
+        pass
+
     def prever(self, evento):
         pass
     
@@ -212,6 +221,93 @@ class FerramentaPoligono(Ferramenta):
             self.controlador.poligono_preview = (evento.x, evento.y)
             self.controlador.desenhar()
 
+class FerramentaPoligonoRegular(Ferramenta):
+
+    def __init__(self, controlador):
+        super().__init__(controlador)
+        self.id_clique = None
+        self.arrastando = False
+        self.x_inicio = 0
+        self.y_inicio = 0
+
+    def iniciar(self, evento):
+        self.x_inicio = evento.x
+        self.y_inicio = evento.y
+        self.arrastando = True
+
+        if self.controlador.poligono_regular is None:
+            self.controlador.poligono_regular = PoligonoRegular(
+                evento.x,
+                evento.y,
+                0,
+                3,
+                self.controlador.cor_borda,
+                self.controlador.cor_preenchimento,
+                self.controlador.tamEspessura
+            )
+            self.controlador.desenhar()
+
+    def atualizar(self, evento):
+        poligono = self.controlador.poligono_regular
+        if poligono is None:
+            return
+
+        poligono.raio = math.hypot(
+            evento.x - poligono.cx,
+            evento.y - poligono.cy
+        )
+        self.controlador.desenhar()
+
+    def finalizar(self, evento):
+        distancia = math.hypot(evento.x - self.x_inicio, evento.y - self.y_inicio)
+        if distancia > 3:
+            self.arrastando = True
+        else:
+            self.arrastando = False
+
+    def clique_esquerdo(self, evento):
+        if self.arrastando:
+            self.arrastando = False
+            return
+
+        if self.controlador.poligono_regular is None:
+            return
+
+        self.id_clique = self.controlador.janela.after(
+            200,
+            self.aumentar_lado
+        )
+
+    def aumentar_lado(self):
+        poligono = self.controlador.poligono_regular
+        if poligono is None:
+            return
+
+        poligono.lados += 1
+        self.id_clique = None
+        self.controlador.desenhar()
+
+    def clique_direito(self, evento):
+        poligono = self.controlador.poligono_regular
+        if poligono is None:
+            return
+
+        if poligono.lados > 3:
+            poligono.lados -= 1
+            self.controlador.desenhar()
+
+    def duplo_clique(self, evento):
+        if self.id_clique is not None:
+            self.controlador.janela.after_cancel(self.id_clique)
+            self.id_clique = None
+
+        poligono = self.controlador.poligono_regular
+        if poligono is None:
+            return
+
+        self.controlador.figuras.append(poligono)
+        self.controlador.poligono_regular = None
+        self.controlador.desenhar()
 
 class FerramentaSelecionar(Ferramenta):
 
@@ -407,4 +503,5 @@ FERRAMENTAS = {
     "Rabisco": FerramentaRabisco,
     "Polígono": FerramentaPoligono,
     "Seleção": FerramentaSelecionar,
+    "Polígono Regular": FerramentaPoligonoRegular,
 }
