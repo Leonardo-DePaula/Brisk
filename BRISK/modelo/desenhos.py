@@ -146,7 +146,6 @@ class Desenhos:
         self.figuras_candidatas = []
         self.retangulo_selecao = None
         self.posicao_anterior = None
-        self.figuras_escolhidas = []
         self.figuras_compostas = [
             figura for figura in self.figuras
             if figura.__class__.__name__ == "FiguraComposta"
