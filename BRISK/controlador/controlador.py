@@ -225,18 +225,18 @@ class Controlador(Desenhos):
 
     def agrupar_figuras(self, evento=None):
 
-        if len(self.figuras_escolhidas) < 2:
+        if len(self.figuras_selecionadas) < 2:
             return
 
-        for figura in self.figuras_escolhidas:
+        for figura in self.figuras_selecionadas:
             self.figuras.remove(figura)
 
-        composta = FiguraComposta(list(self.figuras_escolhidas))
+        composta = FiguraComposta(list(self.figuras_selecionadas))
 
         self.figuras.append(composta)
         self.figuras_compostas.append(composta)
 
-        self.figuras_escolhidas = []
+        self.figuras_selecionadas = []
         self.figura_selecionada = composta
 
         self.desenhar()
@@ -255,7 +255,7 @@ class Controlador(Desenhos):
 
         self.figuras_compostas.remove(figura)
 
-        self.figuras_escolhidas = list(figura.figuras)
+        self.figuras_selecionadas = list(figura.figuras)
         self.figura_selecionada = None
 
         self.desenhar()
