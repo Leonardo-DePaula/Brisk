@@ -9,7 +9,9 @@ class Desenhos:
 
         self.figuras = []
         self.figura_nova = self.poligono_em_construcao = self.poligono_preview = None
-        self.figura_selecionada = None
+        self.figuras_selecionadas = []
+        self.figuras_candidatas = []
+        self.retangulo_selecao = None
         self.posicao_anterior = None
         self.buffer_copia = None
 
@@ -22,8 +24,10 @@ class Desenhos:
 
             figura.desenhar(canvas)
 
-            if figura == self.figura_selecionada:
-                self.desenhar_caixa_selecao(figura, canvas)
+            if figura in self.figuras_selecionadas:
+                self.desenhar_caixa_selecao(figura, canvas, cor="red")
+            elif figura in self.figuras_candidatas:
+                self.desenhar_caixa_selecao(figura, canvas, cor="blue")
 
         if self.figura_nova:
             self.figura_nova.desenhar(canvas, dash=(4, 2))
@@ -63,7 +67,15 @@ class Desenhos:
                 width=1
             )
 
-    def desenhar_caixa_selecao(self, figura, canvas):
+        if self.retangulo_selecao:
+            x1, y1, x2, y2 = self.retangulo_selecao
+            canvas.create_rectangle(
+                x1, y1, x2, y2,
+                outline="blue",
+                dash=(3, 2)
+            )
+
+    def desenhar_caixa_selecao(self, figura, canvas, cor="red"):
 
         bbox = figura.obter_bbox()
 
@@ -79,7 +91,7 @@ class Desenhos:
             y1 - margem,
             x2 + margem,
             y2 + margem,
-            outline="red",
+            outline=cor,
             width=1,
             dash=(4, 2)
         )
@@ -100,7 +112,9 @@ class Desenhos:
         self.figura_nova = None
         self.poligono_em_construcao = None
         self.poligono_preview = None
-        self.figura_selecionada = None
+        self.figuras_selecionadas = []
+        self.figuras_candidatas = []
+        self.retangulo_selecao = None
         self.posicao_anterior = None
         self.buffer_copia = None
 
@@ -123,7 +137,9 @@ class Desenhos:
         self.figura_nova = None
         self.poligono_em_construcao = None
         self.poligono_preview = None
-        self.figura_selecionada = None
+        self.figuras_selecionadas = []
+        self.figuras_candidatas = []
+        self.retangulo_selecao = None
         self.posicao_anterior = None
 
         self.desenhar()
