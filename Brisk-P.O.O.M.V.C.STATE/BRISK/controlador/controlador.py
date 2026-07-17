@@ -223,14 +223,16 @@ class Controlador(Desenhos):
             self.abrir(caminho)
     
     def agrupar_figuras(self, evento=None):
-
         if len(self.figuras_selecionadas) < 2:
             return
 
-        for figura in self.figuras_selecionadas:
+        figuras_para_agrupar = list(self.figuras_selecionadas)
+
+        for figura in figuras_para_agrupar:
             self.figuras.remove(figura)
 
-        composta = FiguraComposta(list(self.figuras_selecionadas))
+
+        composta = FiguraComposta(figuras_para_agrupar)
 
         self.figuras.append(composta)
 
@@ -238,7 +240,7 @@ class Controlador(Desenhos):
         self.atualizar_controles_com_figura(composta)
 
         self.desenhar()
-
+        
     def desagrupar_figura(self, evento=None):
         
         if not self.figuras_selecionadas:
@@ -250,6 +252,7 @@ class Controlador(Desenhos):
 
         idx = self.figuras.index(figura)
 
+        self.figuras.remove(figura)
         self.figuras.pop(idx)
         self.figuras[idx:idx] = figura.figuras
 
