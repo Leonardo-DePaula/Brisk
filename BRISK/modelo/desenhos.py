@@ -8,7 +8,7 @@ class Desenhos:
     def __init__(self):
 
         self.figuras = []
-        self.figura_nova = self.poligono_em_construcao = self.poligono_preview = None
+        self.figura_nova = self.poligono_em_construcao = self.poligono_preview = self.poligono_regular = None
         self.figuras_selecionadas = []
         self.figuras_candidatas = []
         self.retangulo_selecao = None
@@ -31,6 +31,9 @@ class Desenhos:
 
         if self.figura_nova:
             self.figura_nova.desenhar(canvas, dash=(4, 2))
+
+        if self.poligono_regular:
+            self.poligono_regular.desenhar(canvas, dash=(4, 2))
 
         if self.poligono_em_construcao:
 
@@ -112,6 +115,7 @@ class Desenhos:
         self.figura_nova = None
         self.poligono_em_construcao = None
         self.poligono_preview = None
+        self.poligono_regular = None
         self.figuras_selecionadas = []
         self.figuras_candidatas = []
         self.retangulo_selecao = None
@@ -137,6 +141,7 @@ class Desenhos:
         self.figura_nova = None
         self.poligono_em_construcao = None
         self.poligono_preview = None
+        self.poligono_regular = None
         self.figuras_selecionadas = []
         self.figuras_candidatas = []
         self.retangulo_selecao = None
