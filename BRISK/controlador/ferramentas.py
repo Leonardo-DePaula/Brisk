@@ -6,6 +6,7 @@ class Ferramenta:
     def __init__(self, controlador):
         self.controlador = controlador
         self.controlador.figura_selecionada = None
+        self.controlador.figura_selecionadas = []
 
     def iniciar(self, evento):
         pass
@@ -214,126 +215,188 @@ class FerramentaPoligono(Ferramenta):
 
 class FerramentaSelecionar(Ferramenta):
 
+    def __init__(self, controlador):
+        super().__init__(controlador)
+        self.ponto_inicial_retangulo = None
+
+    def _figura_no_ponto(self, x, y):
+        for figura in reversed(self.controlador.figuras):
+            if figura.contem(x, y):
+                return figura
+        return None
+
+    def _ctrl_pressionado(self, evento):
+        return bool(evento.state & 0x0004)
+
     def iniciar(self, evento):
 
         self.controlador.posicao_anterior = (evento.x, evento.y)
+        self.controlador.figuras_candidatas = []
 
-        encontrado = False
+        ctrl = self._ctrl_pressionado(evento)
+        figura = self._figura_no_ponto(evento.x, evento.y)
 
-        for figura in reversed(self.controlador.figuras):
+        if figura is not None:
+            if ctrl:
+                if figura in self.controlador.figuras_selecionadas:
+                    self.controlador.figuras_selecionadas.remove(figura)
 
-            if figura.contem(evento.x, evento.y) and not encontrado:
+                else:
+                    self.controlador.figuras_selecionadas.append(figura)
+            else:
 
-                self.controlador.figura_selecionada = figura
-                encontrado = True
+                if figura not in self.controlador.figuras_selecionadas:
+                    self.controlador.figuras_selecionadas = [figura]
 
-        if self.controlador.figura_selecionada:
+            self.ponto_inicial_retangulo = None
+            self.controlador.retangulo_selecao = None
+
+        else:
+            if not ctrl:
+                self.controlador.figuras_selecionadas = []
+
+            self.ponto_inicial_retangulo = (evento.x, evento.y)
+            self.controlador.retangulo_selecao = (evento.x, evento.y, evento.x, evento.y)
+
+        if self.controlador.figuras_selecionadas:
             self.controlador.atualizar_controles_com_figura(
-                self.controlador.figura_selecionada
+                self.controlador.figuras_selecionadas[-1]
             )
 
         self.controlador.desenhar()
 
     def atualizar(self, evento):
 
-        if self.controlador.figura_selecionada:
+        if self.ponto_inicial_retangulo is not None:
+            x0, y0 = self.ponto_inicial_retangulo
+            self.controlador.retangulo_selecao = (x0, y0, evento.x, evento.y)
 
-            x_anterior, y_anterior = self.controlador.posicao_anterior
+            rx1, rx2 = min(x0, evento.x), max(x0, evento.x)
+            ry1, ry2 = min(y0, evento.y), max(y0, evento.y)
 
-            dx = evento.x - x_anterior
-            dy = evento.y - y_anterior
-
-            self.controlador.figura_selecionada.mover(dx, dy)
-
-            self.controlador.posicao_anterior = (evento.x, evento.y)
+            self.controlador.figuras_candidatas = [
+                figura for figura in self.controlador.figuras
+                if figura.intersecta_retangulo(rx1, ry1, rx2, ry2)
+            ]
 
             self.controlador.desenhar()
+            return
+
+        x_anterior, y_anterior = self.controlador.posicao_anterior
+        dx = evento.x - x_anterior
+        dy = evento.y - y_anterior
+
+        for figura in self.controlador.figuras_selecionadas:
+            figura.mover(dx, dy)
+
+        self.controlador.posicao_anterior = (evento.x, evento.y)
+        self.controlador.desenhar()
 
     def finalizar(self, evento):
-        pass
 
-    def apagar(self, evento):
+        if self.ponto_inicial_retangulo is not None:
 
-        if self.controlador.figura_selecionada:
+            x0, y0 = self.ponto_inicial_retangulo
+            x1, y1 = evento.x, evento.y
 
-            self.controlador.figuras.remove(
-                self.controlador.figura_selecionada
-            )
+            rx1, rx2 = min(x0, x1), max(x0, x1)
+            ry1, ry2 = min(y0, y1), max(y0, y1)
 
-            self.controlador.figura_selecionada = None
+            capturadas = [
+                figura for figura in self.controlador.figuras
+                if figura.intersecta_retangulo(rx1, ry1, rx2, ry2)
+            ]
+
+            for figura in capturadas:
+                if figura not in self.controlador.figuras_selecionadas:
+                    self.controlador.figuras_selecionadas.append(figura)
+
+            self.ponto_inicial_retangulo = None
+            self.controlador.retangulo_selecao = None
+            self.controlador.figuras_candidatas = []
+
+            if self.controlador.figuras_selecionadas:
+                self.controlador.atualizar_controles_com_figura(
+                    self.controlador.figuras_selecionadas[-1]
+                )
 
             self.controlador.desenhar()
 
+    def apagar(self, evento):
+        for figura in self.controlador.figuras_selecionadas:
+            if figura in self.controlador.figuras:
+                self.controlador.figuras.remove(figura)
+        self.controlador.figuras_selecionadas = []
+        self.controlador.desenhar()
+
     def copiar(self, evento):
-
-        if self.controlador.figura_selecionada:
-
-            self.controlador.buffer_copia = self.controlador.figura_selecionada.copiar()
+        self.controlador.buffer_copia = [
+            figura.copiar() for figura in self.controlador.figuras_selecionadas
+        ]
 
     def colar(self, evento):
+        if not self.controlador.buffer_copia:
+            return
 
-        if self.controlador.buffer_copia:
+        novas_figuras = []
 
-            nova_figura = self.controlador.buffer_copia.copiar()
+        for figura in self.controlador.buffer_copia:
+
+            nova_figura = figura.copiar()
             nova_figura.mover(15, 15)
 
             self.controlador.figuras.append(nova_figura)
-            self.controlador.figura_selecionada = nova_figura
-            self.controlador.buffer_copia = nova_figura.copiar()
+            novas_figuras.append(nova_figura)
 
-            self.controlador.desenhar()
+        self.controlador.figuras_selecionadas = novas_figuras
+        self.controlador.buffer_copia = [f.copiar() for f in novas_figuras]
+        self.controlador.desenhar()
 
     def mover_para_frente(self, evento):
 
-        figura = self.controlador.figura_selecionada
+        for figura in self.controlador.figuras_selecionadas:
+            if figura in self.controlador.figuras:
 
-        if figura in self.controlador.figuras:
+                idx = self.controlador.figuras.index(figura)
 
-            idx = self.controlador.figuras.index(figura)
-
-            if idx < len(self.controlador.figuras) - 1:
-
-                self.controlador.figuras[idx], self.controlador.figuras[idx + 1] = \
-                    self.controlador.figuras[idx + 1], self.controlador.figuras[idx]
-
-                self.controlador.desenhar()
+                if idx < len(self.controlador.figuras) - 1:
+                    self.controlador.figuras[idx], self.controlador.figuras[idx + 1] = \
+                        self.controlador.figuras[idx + 1], self.controlador.figuras[idx]
+                    
+        self.controlador.desenhar()
 
     def mover_para_tras(self, evento):
 
-        figura = self.controlador.figura_selecionada
+        for figura in self.controlador.figuras_selecionadas:
 
-        if figura in self.controlador.figuras:
+            if figura in self.controlador.figuras:
 
-            idx = self.controlador.figuras.index(figura)
+                idx = self.controlador.figuras.index(figura)
 
-            if idx > 0:
-
-                self.controlador.figuras[idx], self.controlador.figuras[idx - 1] = \
-                    self.controlador.figuras[idx - 1], self.controlador.figuras[idx]
-
-                self.controlador.desenhar()
+                if idx > 0:
+                    self.controlador.figuras[idx], self.controlador.figuras[idx - 1] = \
+                        self.controlador.figuras[idx - 1], self.controlador.figuras[idx]
+                    
+        self.controlador.desenhar()
 
     def mover_para_topo(self, evento):
 
-        figura = self.controlador.figura_selecionada
+        for figura in self.controlador.figuras_selecionadas:
 
-        if figura in self.controlador.figuras:
+            if figura in self.controlador.figuras:
+                self.controlador.figuras.remove(figura)
+                self.controlador.figuras.append(figura)
 
-            self.controlador.figuras.remove(figura)
-            self.controlador.figuras.append(figura)
-
-            self.controlador.desenhar()
+        self.controlador.desenhar()
 
     def mover_para_fundo(self, evento):
+        for figura in reversed(self.controlador.figuras_selecionadas):
 
-        figura = self.controlador.figura_selecionada
-
-        if figura in self.controlador.figuras:
-
-            self.controlador.figuras.remove(figura)
-            self.controlador.figuras.insert(0, figura)
-
-            self.controlador.desenhar()
+            if figura in self.controlador.figuras:
+                self.controlador.figuras.remove(figura)
+                self.controlador.figuras.insert(0, figura)
+            
+        self.controlador.desenhar()
 
 
 FERRAMENTAS = {
