@@ -107,7 +107,8 @@ class Interface:
             'Retângulo',
             'Círculo',
             'Oval',
-            'Polígono'
+            'Polígono',
+            'Polígono Regular'
         )
  
         self.option_menu.pack(side=LEFT, padx=4)
