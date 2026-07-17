@@ -617,3 +617,13 @@ def criarFiguraDeDicionario(dados):
             return FiguraComposta(
                 [criarFiguraDeDicionario(item) for item in dados["figuras"]]
             )
+
+FERRAMENTAS = {
+    "Linha": FerramentaLinha,
+    "Retângulo": FerramentaRetangulo,
+    "Círculo": FerramentaCirculo,
+    "Oval": FerramentaOval,
+    "Rabisco": FerramentaRabisco,
+    "Polígono": FerramentaPoligono,
+    "Seleção": FerramentaSelecionar,
+}
