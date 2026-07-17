@@ -21,6 +21,7 @@ class Controlador(Desenhos):
         self.tamEspessura = 1
 
         tipo_inicial = self.interface.tipo_figura_var.get()
+        self.tipo_ferramenta_atual = tipo_inicial 
         self.ferramenta = FERRAMENTAS[tipo_inicial](self)
 
         self.conectar_eventos()
@@ -29,6 +30,10 @@ class Controlador(Desenhos):
 
         self.interface.swatch_preenchimento.config(
             command=self.escolher_cor_preenchimento
+        )
+
+        self.interface.botao_sem_preenchimento.config( 
+            command=self.remover_preenchimento
         )
 
         self.interface.swatch_borda.config(
@@ -66,6 +71,33 @@ class Controlador(Desenhos):
         self.janela.bind("<Left>", self.mover_para_tras)
         self.janela.bind("<Up>", self.mover_para_topo)
         self.janela.bind("<Down>", self.mover_para_fundo)
+
+        self.interface.tipo_figura_var.trace_add(
+            "write",
+            self.trocar_ferramenta
+        )
+
+    def trocar_ferramenta(self, *args):
+
+        tipo = self.interface.tipo_figura_var.get()
+
+        if tipo == self.tipo_ferramenta_atual:
+            return
+
+        self.tipo_ferramenta_atual = tipo
+
+
+        self.figuras_selecionadas = []
+        self.figuras_candidatas = []
+        self.retangulo_selecao = None
+        self.posicao_anterior = None
+        self.figura_nova = None
+        self.poligono_em_construcao = None
+        self.poligono_preview = None
+
+        self.ferramenta = FERRAMENTAS[tipo](self)
+
+        self.desenhar()
 
     def iniciar_desenho(self, evento):
 
@@ -110,35 +142,51 @@ class Controlador(Desenhos):
         self.interface.tamanho_espessura_esc.set(figura.tamEspessura)
 
     def escolher_cor_preenchimento(self):
-
         cor = askcolor()[1]
 
         if cor:
             self.cor_preenchimento = cor
             self.interface.swatch_preenchimento.config(bg=cor)
 
-            if self.figura_selecionada:
-                self.figura_selecionada.cor_preenchimento = cor
+            for figura in self.figuras_selecionadas:
+                figura.cor_preenchimento = cor
+
+            if self.figuras_selecionadas:
                 self.desenhar()
 
     def escolher_cor_borda(self):
-
         cor = askcolor()[1]
 
         if cor:
             self.cor_borda = cor
             self.interface.swatch_borda.config(bg=cor)
 
-            if self.figura_selecionada:
-                self.figura_selecionada.cor_borda = cor
+            for figura in self.figuras_selecionadas:
+                figura.cor_borda = cor
+
+            if self.figuras_selecionadas:
                 self.desenhar()
 
     def escolher_espessura(self, evento):
 
         self.tamEspessura = int(evento.widget.get())
 
-        if self.figura_selecionada:
-            self.figura_selecionada.tamEspessura = self.tamEspessura
+        for figura in self.figuras_selecionadas:
+            figura.tamEspessura = self.tamEspessura
+        
+        if self.figuras_selecionadas:
+            self.desenhar()
+    
+    def remover_preenchimento(self):
+
+        self.cor_preenchimento = ""
+        self.interface.swatch_preenchimento.config(bg="white")
+
+        for figura in self.figuras_selecionadas:
+            figura.cor_preenchimento = ""
+
+        if self.figuras_selecionadas:
+
             self.desenhar()
 
     def salvar_arquivo(self):
