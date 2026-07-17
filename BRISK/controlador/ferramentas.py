@@ -1,507 +1,619 @@
-from modelo.figuras import *
 import math
-
-class Ferramenta:
-
-    def __init__(self, controlador):
-        self.controlador = controlador
-        self.controlador.figura_selecionada = None
-        self.controlador.figura_selecionadas = []
-
-    def iniciar(self, evento):
-        pass
-
-    def atualizar(self, evento):
-        pass
-
-    def finalizar(self, evento):
-        pass
-
-    def clique_esquerdo(self, evento):
-        pass
-
-    def clique_direito(self, evento):
-        pass
-
-    def duplo_clique(self, evento):
-        pass
-
-    def prever(self, evento):
-        pass
-    
-    def apagar(self, evento):
-        pass
-
-    def copiar(self, evento):
-        pass
-
-    def colar(self, evento):
-        pass
-
-    def mover_para_frente(self, evento):
-        pass
-
-    def mover_para_tras(self, evento):
-        pass
-
-    def mover_para_topo(self, evento):
-        pass
-
-    def mover_para_fundo(self, evento):
-        pass
+import copy
 
 
-class FerramentaLinha(Ferramenta):
+class Figura:
+    def __init__(self, cor_preenchimento, cor_borda):
+        self.cor_preenchimento = cor_preenchimento
+        self.cor_borda = cor_borda
 
-    def iniciar(self, evento):
+    def distancia(self, x1, y1, x2, y2, px, py):
 
-        self.controlador.figura_nova = Linha(
-            evento.x, evento.y,
-            evento.x, evento.y,
-            self.controlador.cor_borda,
-            self.controlador.tamEspessura
+        dx = x2 - x1
+        dy = y2 - y1
+
+        ab_len_sq = dx**2 + dy**2
+
+        if ab_len_sq == 0:
+            return math.sqrt((px - x1)**2 + (py - y1)**2)
+
+        ap_x = px - x1
+        ap_y = py - y1
+
+        t = (ap_x * dx + ap_y * dy) / ab_len_sq
+
+        t = max(0.0, min(1.0, t))
+
+        ponto_proximo_x = x1 + t * dx
+        ponto_proximo_y = y1 + t * dy
+
+        return math.sqrt(
+            (px - ponto_proximo_x)**2 +
+            (py - ponto_proximo_y)**2
         )
 
-    def atualizar(self, evento):
-
-        self.controlador.figura_nova.x2 = evento.x
-        self.controlador.figura_nova.y2 = evento.y
-        self.controlador.desenhar()
-
-    def finalizar(self, evento):
-
-        self.controlador.figuras.append(self.controlador.figura_nova)
-        self.controlador.figura_nova = None
-        self.controlador.desenhar()
-
-
-class FerramentaRetangulo(Ferramenta):
-
-    def iniciar(self, evento):
-
-        self.controlador.figura_nova = Retangulo(
-            evento.x, evento.y,
-            evento.x, evento.y,
-            self.controlador.cor_borda,
-            self.controlador.cor_preenchimento,
-            self.controlador.tamEspessura
-        )
-
-    def atualizar(self, evento):
-
-        self.controlador.figura_nova.x2 = evento.x
-        self.controlador.figura_nova.y2 = evento.y
-        self.controlador.desenhar()
-
-    def finalizar(self, evento):
-
-        self.controlador.figuras.append(self.controlador.figura_nova)
-        self.controlador.figura_nova = None
-        self.controlador.desenhar()
-
-
-class FerramentaCirculo(Ferramenta):
-
-    def iniciar(self, evento):
-
-        self.controlador.figura_nova = Circulo(
-            evento.x, evento.y,
-            evento.x, evento.y,
-            self.controlador.cor_borda,
-            self.controlador.cor_preenchimento,
-            self.controlador.tamEspessura
-        )
-
-    def atualizar(self, evento):
-
-        self.controlador.figura_nova.x2 = evento.x
-        self.controlador.figura_nova.y2 = evento.y
-        self.controlador.desenhar()
-
-    def finalizar(self, evento):
-
-        self.controlador.figuras.append(self.controlador.figura_nova)
-        self.controlador.figura_nova = None
-        self.controlador.desenhar()
-
-
-class FerramentaOval(Ferramenta):
-
-    def iniciar(self, evento):
-
-        self.controlador.figura_nova = Oval(
-            evento.x, evento.y,
-            evento.x, evento.y,
-            self.controlador.cor_borda,
-            self.controlador.cor_preenchimento,
-            self.controlador.tamEspessura
-        )
-
-    def atualizar(self, evento):
-
-        self.controlador.figura_nova.x2 = evento.x
-        self.controlador.figura_nova.y2 = evento.y
-        self.controlador.desenhar()
-
-    def finalizar(self, evento):
-
-        self.controlador.figuras.append(self.controlador.figura_nova)
-        self.controlador.figura_nova = None
-        self.controlador.desenhar()
-
-
-class FerramentaRabisco(Ferramenta):
-
-    def iniciar(self, evento):
-
-        self.controlador.figura_nova = Rabisco(
-            [(evento.x, evento.y)],
-            self.controlador.cor_borda,
-            self.controlador.tamEspessura
-        )
-
-    def atualizar(self, evento):
-
-        self.controlador.figura_nova.pontos.append((evento.x, evento.y))
-        self.controlador.desenhar()
-
-    def finalizar(self, evento):
-
-        self.controlador.figuras.append(self.controlador.figura_nova)
-        self.controlador.figura_nova = None
-        self.controlador.desenhar()
-
-
-class FerramentaPoligono(Ferramenta):
-
-    def iniciar(self, evento):
-
-        if self.controlador.poligono_em_construcao is None:
-
-            self.controlador.poligono_em_construcao = Poligono(
-                [evento.x, evento.y],
-                self.controlador.cor_borda,
-                self.controlador.cor_preenchimento,
-                self.controlador.tamEspessura
-            )
-
-        else:
-
-            pontos = self.controlador.poligono_em_construcao.pontosPoligonos
-
-            px = pontos[0]
-            py = pontos[1]
-
-            distancia = math.hypot(
-                evento.x - px,
-                evento.y - py
-            )
-
-            raio_fechamento = max(4, self.controlador.tamEspessura + 3)
-            tolerancia_fechamento = raio_fechamento * 2
-
-            if len(pontos) >= 6 and distancia <= tolerancia_fechamento:
-                self.controlador.fechar_poligono()
-
-            else:
-                pontos.extend([evento.x, evento.y])
-
-        self.controlador.desenhar()
-
-    def atualizar(self, evento):
-
-        self.controlador.poligono_preview = (evento.x, evento.y)
-        self.controlador.desenhar()
-
-    def finalizar(self, evento):
+    def desenhar(self, canvas, dash=None):
         pass
 
-    def prever(self, evento):
-        if self.controlador.poligono_em_construcao:
-            self.controlador.poligono_preview = (evento.x, evento.y)
-            self.controlador.desenhar()
+    def contem(self, x, y):
+        return False
 
-class FerramentaPoligonoRegular(Ferramenta):
+    def mover(self, dx, dy):
+        pass
 
-    def __init__(self, controlador):
-        super().__init__(controlador)
-        self.id_clique = None
-        self.arrastando = False
-        self.x_inicio = 0
-        self.y_inicio = 0
-
-    def iniciar(self, evento):
-        self.x_inicio = evento.x
-        self.y_inicio = evento.y
-        self.arrastando = True
-
-        if self.controlador.poligono_regular is None:
-            self.controlador.poligono_regular = PoligonoRegular(
-                evento.x,
-                evento.y,
-                0,
-                3,
-                self.controlador.cor_borda,
-                self.controlador.cor_preenchimento,
-                self.controlador.tamEspessura
-            )
-            self.controlador.desenhar()
-
-    def atualizar(self, evento):
-        poligono = self.controlador.poligono_regular
-        if poligono is None:
-            return
-
-        poligono.raio = math.hypot(
-            evento.x - poligono.cx,
-            evento.y - poligono.cy
-        )
-        self.controlador.desenhar()
-
-    def finalizar(self, evento):
-        distancia = math.hypot(evento.x - self.x_inicio, evento.y - self.y_inicio)
-        if distancia > 3:
-            self.arrastando = True
-        else:
-            self.arrastando = False
-
-    def clique_esquerdo(self, evento):
-        if self.arrastando:
-            self.arrastando = False
-            return
-
-        if self.controlador.poligono_regular is None:
-            return
-
-        self.id_clique = self.controlador.janela.after(
-            200,
-            self.aumentar_lado
-        )
-
-    def aumentar_lado(self):
-        poligono = self.controlador.poligono_regular
-        if poligono is None:
-            return
-
-        poligono.lados += 1
-        self.id_clique = None
-        self.controlador.desenhar()
-
-    def clique_direito(self, evento):
-        poligono = self.controlador.poligono_regular
-        if poligono is None:
-            return
-
-        if poligono.lados > 3:
-            poligono.lados -= 1
-            self.controlador.desenhar()
-
-    def duplo_clique(self, evento):
-        if self.id_clique is not None:
-            self.controlador.janela.after_cancel(self.id_clique)
-            self.id_clique = None
-
-        poligono = self.controlador.poligono_regular
-        if poligono is None:
-            return
-
-        self.controlador.figuras.append(poligono)
-        self.controlador.poligono_regular = None
-        self.controlador.desenhar()
-
-class FerramentaSelecionar(Ferramenta):
-
-    def __init__(self, controlador):
-        super().__init__(controlador)
-        self.ponto_inicial_retangulo = None
-
-    def _figura_no_ponto(self, x, y):
-        for figura in reversed(self.controlador.figuras):
-            if figura.contem(x, y):
-                return figura
+    def obter_bbox(self):
         return None
+    
+    def intersecta_retangulo(self, rx1, ry1, rx2, ry2):
+        bbox = self.obter_bbox()
 
-    def _ctrl_pressionado(self, evento):
-        return bool(evento.state & 0x0004)
+        if bbox is None:
+            return False
 
-    def iniciar(self, evento):
+        x1, y1, x2, y2 = bbox
 
-        self.controlador.posicao_anterior = (evento.x, evento.y)
-        self.controlador.figuras_candidatas = []
+        return not (x2 < rx1 or x1 > rx2 or y2 < ry1 or y1 > ry2)
+        
+    def contido_em_retangulo(self, rx1, ry1, rx2, ry2):
+        bbox = self.obter_bbox()
 
-        ctrl = self._ctrl_pressionado(evento)
-        figura = self._figura_no_ponto(evento.x, evento.y)
+        if bbox is None:
+            return False
 
-        if figura is not None:
-            if ctrl:
-                if figura in self.controlador.figuras_selecionadas:
-                    self.controlador.figuras_selecionadas.remove(figura)
+        x1, y1, x2, y2 = bbox
 
-                else:
-                    self.controlador.figuras_selecionadas.append(figura)
-            else:
+        return x1 >= rx1 and x2 <= rx2 and y1 >= ry1 and y2 <= ry2
+    
+    def copiar(self):
+        return copy.deepcopy(self)
 
-                if figura not in self.controlador.figuras_selecionadas:
-                    self.controlador.figuras_selecionadas = [figura]
+class Linha(Figura):
+    def __init__(self, x1, y1, x2, y2, cor_borda, tamEspessura):
+        super().__init__("", cor_borda)
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+        self.tamEspessura = tamEspessura
 
-            self.ponto_inicial_retangulo = None
-            self.controlador.retangulo_selecao = None
+    def desenhar(self, canvas, dash=None):
+        canvas.create_line(self.x1, self.y1, self.x2, self.y2,
+                           fill=self.cor_borda,
+                           width=self.tamEspessura,
+                           dash=dash)
 
-        else:
-            if not ctrl:
-                self.controlador.figuras_selecionadas = []
+    def contem(self, x, y):
 
-            self.ponto_inicial_retangulo = (evento.x, evento.y)
-            self.controlador.retangulo_selecao = (evento.x, evento.y, evento.x, evento.y)
+        return self.distancia(
+            self.x1,
+            self.y1,
+            self.x2,
+            self.y2,
+            x,
+            y
+        ) <= 5
 
-        if self.controlador.figuras_selecionadas:
-            self.controlador.atualizar_controles_com_figura(
-                self.controlador.figuras_selecionadas[-1]
+    def mover(self, dx, dy):
+
+        self.x1 += dx
+        self.y1 += dy
+        self.x2 += dx
+        self.y2 += dy
+
+    def obter_bbox(self):
+        return (
+            min(self.x1, self.x2), min(self.y1, self.y2),
+            max(self.x1, self.x2), max(self.y1, self.y2)
+        )
+
+    def paraDicionario(self):
+        return {
+            "tipo": "Linha",
+            "x1": self.x1, "y1": self.y1,
+            "x2": self.x2, "y2": self.y2,
+            "cor_borda": self.cor_borda,
+            "tamEspessura": self.tamEspessura
+        }
+
+
+        
+class Circulo(Figura):
+    def __init__(self, x1, y1, x2, y2, cor_borda, cor_preenchimento, tamEspessura):
+        super().__init__(cor_preenchimento, cor_borda)
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+
+        raio = ((self.x2 - self.x1)**2 + (self.y2 - self.y1)**2) ** 0.5
+
+        canvas.create_oval(
+            self.x1 - raio,
+            self.y1 - raio,
+            self.x1 + raio,
+            self.y1 + raio,
+            fill=self.cor_preenchimento,
+            outline=self.cor_borda,
+            width=self.tamEspessura,
+            dash=dash
+        )
+
+    def contem(self, x, y):
+
+        raio = ((self.x2 - self.x1)**2 + (self.y2 - self.y1)**2) ** 0.5
+
+        distancia_centro = math.sqrt(
+            (x - self.x1)**2 +
+            (y - self.y1)**2
+        )
+
+        return distancia_centro <= raio
+
+    def mover(self, dx, dy):
+
+        self.x1 += dx
+        self.y1 += dy
+        self.x2 += dx
+        self.y2 += dy
+
+    def obter_bbox(self):
+        raio = ((self.x2 - self.x1)**2 + (self.y2 - self.y1)**2) ** 0.5
+        return (
+            self.x1 - raio, self.y1 - raio,
+            self.x1 + raio, self.y1 + raio
+        )
+
+    def paraDicionario(self):
+        return {
+            "tipo": "Circulo",
+            "x1": self.x1, "y1": self.y1,
+            "x2": self.x2, "y2": self.y2,
+            "cor_borda": self.cor_borda,
+            "cor_preenchimento": self.cor_preenchimento,
+            "tamEspessura": self.tamEspessura
+        }
+
+class Oval(Figura):
+    def __init__(self, x1, y1, x2, y2, cor_borda, cor_preenchimento, tamEspessura):
+        super().__init__(cor_preenchimento, cor_borda)
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        canvas.create_oval(self.x1, self.y1, self.x2, self.y2,
+                           fill=self.cor_preenchimento,
+                           outline=self.cor_borda,
+                           width=self.tamEspessura,
+                           dash=dash)
+
+    def contem(self, x, y):
+
+        centro_x = (self.x1 + self.x2) / 2
+        centro_y = (self.y1 + self.y2) / 2
+
+        raio_x = abs(self.x2 - self.x1) / 2
+        raio_y = abs(self.y2 - self.y1) / 2
+
+        if raio_x == 0 or raio_y == 0:
+            return False
+
+        valor = ((x - centro_x) ** 2) / (raio_x ** 2) + ((y - centro_y) ** 2) / (raio_y ** 2)
+
+        return valor <= 1
+
+    def mover(self, dx, dy):
+
+        self.x1 += dx
+        self.y1 += dy
+        self.x2 += dx
+        self.y2 += dy
+
+    def obter_bbox(self):
+        return (
+            min(self.x1, self.x2), min(self.y1, self.y2),
+            max(self.x1, self.x2), max(self.y1, self.y2)
+        )
+
+    def paraDicionario(self):
+        return {
+            "tipo": "Oval",
+            "x1": self.x1, "y1": self.y1,
+            "x2": self.x2, "y2": self.y2,
+            "cor_borda": self.cor_borda,
+            "cor_preenchimento": self.cor_preenchimento,
+            "tamEspessura": self.tamEspessura
+        }
+
+
+class Rabisco(Figura):
+    def __init__(self, pontos, cor_borda, tamEspessura):
+        super().__init__("", cor_borda)
+        self.pontos = pontos
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        if len(self.pontos) > 1:
+            canvas.create_line(self.pontos, fill=self.cor_borda, width=self.tamEspessura, dash=dash)
+
+    def contem(self, x, y):
+
+        for i in range(len(self.pontos) - 1):
+
+            x1, y1 = self.pontos[i]
+            x2, y2 = self.pontos[i + 1]
+
+            if self.distancia(x1, y1, x2, y2, x, y) <= 5:
+                return True
+
+        return False
+
+    def mover(self, dx, dy):
+
+        novos_pontos = []
+
+        for x, y in self.pontos:
+            novos_pontos.append((x + dx, y + dy))
+
+        self.pontos = novos_pontos
+
+    def obter_bbox(self):
+
+        xs = [p[0] for p in self.pontos]
+        ys = [p[1] for p in self.pontos]
+
+        return (min(xs), min(ys), max(xs), max(ys))
+
+    def paraDicionario(self):
+        return {
+            "tipo": "Rabisco",
+            "pontos": self.pontos,
+            "cor_borda": self.cor_borda,
+            "tamEspessura": self.tamEspessura
+        }
+
+
+class Retangulo(Figura):
+    def __init__(self, x1, y1, x2, y2, cor_borda, cor_preenchimento, tamEspessura):
+        super().__init__(cor_preenchimento, cor_borda)
+        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        canvas.create_rectangle(self.x1, self.y1, self.x2, self.y2,
+                                fill=self.cor_preenchimento,
+                                outline=self.cor_borda,
+                                width=self.tamEspessura,
+                                dash=dash)
+
+    def contem(self, x, y):
+
+        menor_x = min(self.x1, self.x2)
+        maior_x = max(self.x1, self.x2)
+
+        menor_y = min(self.y1, self.y2)
+        maior_y = max(self.y1, self.y2)
+
+        return menor_x <= x <= maior_x and menor_y <= y <= maior_y
+
+    def mover(self, dx, dy):
+
+        self.x1 += dx
+        self.y1 += dy
+        self.x2 += dx
+        self.y2 += dy
+
+    def obter_bbox(self):
+        return (
+            min(self.x1, self.x2), min(self.y1, self.y2),
+            max(self.x1, self.x2), max(self.y1, self.y2)
+        )
+
+    def paraDicionario(self):
+        return {
+            "tipo": "Retangulo",
+            "x1": self.x1, "y1": self.y1,
+            "x2": self.x2, "y2": self.y2,
+            "cor_borda": self.cor_borda,
+            "cor_preenchimento": self.cor_preenchimento,
+            "tamEspessura": self.tamEspessura
+        }
+
+class Poligono(Figura):
+    def __init__(self, pontosPoligonos, cor_borda, cor_preenchimento, tamEspessura):
+        super().__init__(cor_preenchimento, cor_borda)
+        self.pontosPoligonos = pontosPoligonos
+        self.tamEspessura = tamEspessura
+
+    def desenhar(self, canvas, dash=None):
+        canvas.create_polygon(*self.pontosPoligonos,
+                              fill=self.cor_preenchimento,
+                              outline=self.cor_borda,
+                              width=self.tamEspessura,
+                              dash=dash)
+
+    def contem(self, x, y):
+
+        pontos = []
+
+        for i in range(0, len(self.pontosPoligonos), 2):
+            pontos.append(
+                (
+                    self.pontosPoligonos[i],
+                    self.pontosPoligonos[i + 1]
+                )
             )
 
-        self.controlador.desenhar()
+        dentro = False
+        n = len(pontos)
 
-    def atualizar(self, evento):
+        if n < 3:
+            return False
 
-        if self.ponto_inicial_retangulo is not None:
-            x0, y0 = self.ponto_inicial_retangulo
-            self.controlador.retangulo_selecao = (x0, y0, evento.x, evento.y)
+        p1x, p1y = pontos[0]
 
-            rx1, rx2 = min(x0, evento.x), max(x0, evento.x)
-            ry1, ry2 = min(y0, evento.y), max(y0, evento.y)
+        for i in range(n + 1):
 
-            self.controlador.figuras_candidatas = [
-              figura for figura in self.controlador.figuras
-              if figura.contido_em_retangulo(rx1, ry1, rx2, ry2)
-            ]
+            p2x, p2y = pontos[i % n]
 
-            self.controlador.desenhar()
-            return
+            if y > min(p1y, p2y):
 
-        x_anterior, y_anterior = self.controlador.posicao_anterior
-        dx = evento.x - x_anterior
-        dy = evento.y - y_anterior
+                if y <= max(p1y, p2y):
 
-        for figura in self.controlador.figuras_selecionadas:
+                    if x <= max(p1x, p2x):
+
+                        if p1y != p2y:
+
+                            x_interceptado = (
+                                (y - p1y) *
+                                (p2x - p1x) /
+                                (p2y - p1y)
+                            ) + p1x
+
+                        if p1x == p2x or x <= x_interceptado:
+                            dentro = not dentro
+
+            p1x, p1y = p2x, p2y
+
+        return dentro
+
+    def mover(self, dx, dy):
+
+        novos_pontos = []
+
+        for i in range(0, len(self.pontosPoligonos), 2):
+
+            novos_pontos.append(self.pontosPoligonos[i] + dx)
+            novos_pontos.append(self.pontosPoligonos[i + 1] + dy)
+
+        self.pontosPoligonos = novos_pontos
+
+    def obter_bbox(self):
+
+        xs = self.pontosPoligonos[0::2]
+        ys = self.pontosPoligonos[1::2]
+
+        return (min(xs), min(ys), max(xs), max(ys))
+
+    def paraDicionario(self):
+        return {
+            "tipo": "Poligono",
+            "pontosPoligonos": self.pontosPoligonos,
+            "cor_borda": self.cor_borda,
+            "cor_preenchimento": self.cor_preenchimento,
+            "tamEspessura": self.tamEspessura
+        }
+
+class PoligonoRegular(Figura):
+    def __init__(self, cx, cy, raio, lados,
+                 cor_borda, cor_preenchimento, tamEspessura):
+
+        super().__init__(cor_preenchimento, cor_borda)
+
+        self.cx = cx
+        self.cy = cy
+        self.raio = raio
+        self.lados = lados
+        self.tamEspessura = tamEspessura
+
+    def calcular_pontos(self):
+
+        pontos = []
+
+        for i in range(self.lados):
+
+            angulo = (2 * math.pi * i / self.lados) - math.pi / 2
+
+            x = self.cx + self.raio * math.cos(angulo)
+            y = self.cy + self.raio * math.sin(angulo)
+
+            pontos.extend([x, y])
+
+        return pontos
+
+    def desenhar(self, canvas, dash=None):
+
+        canvas.create_polygon(
+            *self.calcular_pontos(),
+            fill=self.cor_preenchimento,
+            outline=self.cor_borda,
+            width=self.tamEspessura,
+            dash=dash
+        )
+
+    def contem(self, x, y):
+
+        pontos = self.calcular_pontos()
+
+        vertices = []
+
+        for i in range(0, len(pontos), 2):
+            vertices.append((pontos[i], pontos[i + 1]))
+
+        dentro = False
+        n = len(vertices)
+
+        p1x, p1y = vertices[0]
+
+        for i in range(n + 1):
+
+            p2x, p2y = vertices[i % n]
+
+            if y > min(p1y, p2y):
+
+                if y <= max(p1y, p2y):
+
+                    if x <= max(p1x, p2x):
+
+                        if p1y != p2y:
+
+                            x_interceptado = (
+                                (y - p1y) *
+                                (p2x - p1x) /
+                                (p2y - p1y)
+                            ) + p1x
+
+                        if p1x == p2x or x <= x_interceptado:
+                            dentro = not dentro
+
+            p1x, p1y = p2x, p2y
+
+        return dentro
+
+    def mover(self, dx, dy):
+
+        self.cx += dx
+        self.cy += dy
+
+    def obter_bbox(self):
+
+        pontos = self.calcular_pontos()
+
+        xs = pontos[0::2]
+        ys = pontos[1::2]
+
+        return (
+            min(xs),
+            min(ys),
+            max(xs),
+            max(ys)
+        )
+
+    def paraDicionario(self):
+
+        return {
+            "tipo": "PoligonoRegular",
+            "cx": self.cx,
+            "cy": self.cy,
+            "raio": self.raio,
+            "lados": self.lados,
+            "cor_borda": self.cor_borda,
+            "cor_preenchimento": self.cor_preenchimento,
+            "tamEspessura": self.tamEspessura
+        }
+
+class FiguraComposta(Figura):
+    def __init__(self, figuras):
+        self.figuras = figuras
+    
+    def desenhar(self, canvas, dash=None):
+        for figura in self.figuras:
+            figura.desenhar(canvas, dash=dash)
+    
+    def contem(self, x, y):
+        return any(figura.contem(x, y) for figura in self.figuras)
+    
+    def mover(self, dx, dy):
+        for figura in self.figuras:
             figura.mover(dx, dy)
+    
+    def obter_bbox(self):
+        bboxes = [figura.obter_bbox() for figura in self.figuras if figura.obter_bbox()]
+        if not bboxes:
+            return None
+        xs1 = [b[0] for b in bboxes]
+        ys1 = [b[1] for b in bboxes]
+        xs2 = [b[2] for b in bboxes]
+        ys2 = [b[3] for b in bboxes]
+        return (min(xs1), min(ys1), max(xs2), max(ys2))
+    
+    @property
+    def cor_preenchimento(self):
+        if self.figuras:
+            return self.figuras[0].cor_preenchimento
+        return ""
+    
+    @cor_preenchimento.setter
+    def cor_preenchimento(self, valor):
+        for figura in self.figuras:
+            figura.cor_preenchimento = valor
+    
+    @property
+    def cor_borda(self):
+        if self.figuras:
+            return self.figuras[0].cor_borda
+        return "black"
+    
+    @cor_borda.setter
+    def cor_borda(self, valor):
+        for figura in self.figuras:
+            figura.cor_borda = valor
+    
+    @property
+    def tamEspessura(self):
+        if self.figuras:
+            return self.figuras[0].tamEspessura
+        return 1
+    
+    @tamEspessura.setter
+    def tamEspessura(self, valor):
+        for figura in self.figuras:
+            figura.tamEspessura = valor
+    
+    def paraDicionario(self):
+        return {
+            "tipo": "FiguraComposta",
+            "figuras": [figura.paraDicionario() for figura in self.figuras]
+        }
 
-        self.controlador.posicao_anterior = (evento.x, evento.y)
-        self.controlador.desenhar()
+def criarFiguraDeDicionario(dados):
 
-    def finalizar(self, evento):
+    tipo = dados["tipo"]
 
-        if self.ponto_inicial_retangulo is not None:
+    match tipo:
 
-            x0, y0 = self.ponto_inicial_retangulo
-            x1, y1 = evento.x, evento.y
+        case "Linha":
+            return Linha(
+                dados["x1"], dados["y1"], dados["x2"], dados["y2"],
+                dados["cor_borda"], dados["tamEspessura"]
+            )
 
-            rx1, rx2 = min(x0, x1), max(x0, x1)
-            ry1, ry2 = min(y0, y1), max(y0, y1)
+        case "Circulo":
+            return Circulo(
+                dados["x1"], dados["y1"], dados["x2"], dados["y2"],
+                dados["cor_borda"], dados["cor_preenchimento"], dados["tamEspessura"]
+            )
 
-            capturadas = [
-              figura for figura in self.controlador.figuras
-              if figura.contido_em_retangulo(rx1, ry1, rx2, ry2)
-             ]
+        case "Oval":
+            return Oval(
+                dados["x1"], dados["y1"], dados["x2"], dados["y2"],
+                dados["cor_borda"], dados["cor_preenchimento"], dados["tamEspessura"]
+            )
 
-            for figura in capturadas:
-                if figura not in self.controlador.figuras_selecionadas:
-                    self.controlador.figuras_selecionadas.append(figura)
+        case "Rabisco":
+            return Rabisco(
+                dados["pontos"], dados["cor_borda"], dados["tamEspessura"]
+            )
 
-            self.ponto_inicial_retangulo = None
-            self.controlador.retangulo_selecao = None
-            self.controlador.figuras_candidatas = []
+        case "Retangulo":
+            return Retangulo(
+                dados["x1"], dados["y1"], dados["x2"], dados["y2"],
+                dados["cor_borda"], dados["cor_preenchimento"], dados["tamEspessura"]
+            )
 
-            if self.controlador.figuras_selecionadas:
-                self.controlador.atualizar_controles_com_figura(
-                    self.controlador.figuras_selecionadas[-1]
-                )
+        case "Poligono":
+            return Poligono(
+                dados["pontosPoligonos"], dados["cor_borda"],
+                dados["cor_preenchimento"], dados["tamEspessura"]
+            )
 
-            self.controlador.desenhar()
-
-    def apagar(self, evento):
-        for figura in self.controlador.figuras_selecionadas:
-            if figura in self.controlador.figuras:
-                self.controlador.figuras.remove(figura)
-        self.controlador.figuras_selecionadas = []
-        self.controlador.desenhar()
-
-    def copiar(self, evento):
-        self.controlador.buffer_copia = [
-            figura.copiar() for figura in self.controlador.figuras_selecionadas
-        ]
-
-    def colar(self, evento):
-        if not self.controlador.buffer_copia:
-            return
-
-        novas_figuras = []
-
-        for figura in self.controlador.buffer_copia:
-
-            nova_figura = figura.copiar()
-            nova_figura.mover(15, 15)
-
-            self.controlador.figuras.append(nova_figura)
-            novas_figuras.append(nova_figura)
-
-        self.controlador.figuras_selecionadas = novas_figuras
-        self.controlador.buffer_copia = [f.copiar() for f in novas_figuras]
-        self.controlador.desenhar()
-
-    def mover_para_frente(self, evento):
-
-        for figura in self.controlador.figuras_selecionadas:
-            if figura in self.controlador.figuras:
-
-                idx = self.controlador.figuras.index(figura)
-
-                if idx < len(self.controlador.figuras) - 1:
-                    self.controlador.figuras[idx], self.controlador.figuras[idx + 1] = \
-                        self.controlador.figuras[idx + 1], self.controlador.figuras[idx]
-                    
-        self.controlador.desenhar()
-
-    def mover_para_tras(self, evento):
-
-        for figura in self.controlador.figuras_selecionadas:
-
-            if figura in self.controlador.figuras:
-
-                idx = self.controlador.figuras.index(figura)
-
-                if idx > 0:
-                    self.controlador.figuras[idx], self.controlador.figuras[idx - 1] = \
-                        self.controlador.figuras[idx - 1], self.controlador.figuras[idx]
-                    
-        self.controlador.desenhar()
-
-    def mover_para_topo(self, evento):
-
-        for figura in self.controlador.figuras_selecionadas:
-
-            if figura in self.controlador.figuras:
-                self.controlador.figuras.remove(figura)
-                self.controlador.figuras.append(figura)
-
-        self.controlador.desenhar()
-
-    def mover_para_fundo(self, evento):
-        for figura in reversed(self.controlador.figuras_selecionadas):
-
-            if figura in self.controlador.figuras:
-                self.controlador.figuras.remove(figura)
-                self.controlador.figuras.insert(0, figura)
-            
-        self.controlador.desenhar()
-
-
-FERRAMENTAS = {
-    "Linha": FerramentaLinha,
-    "Retângulo": FerramentaRetangulo,
-    "Círculo": FerramentaCirculo,
-    "Oval": FerramentaOval,
-    "Rabisco": FerramentaRabisco,
-    "Polígono": FerramentaPoligono,
-    "Seleção": FerramentaSelecionar,
-    "Polígono Regular": FerramentaPoligonoRegular,
-}
+        case "FiguraComposta":
+            return FiguraComposta(
+                [criarFiguraDeDicionario(item) for item in dados["figuras"]]
+            )
