@@ -256,15 +256,26 @@ class FerramentaPoligonoRegular(Ferramenta):
             evento.x - poligono.cx,
             evento.y - poligono.cy
         )
+
+        dx = evento.x - poligono.cx
+        dy = evento.y - poligono.cy
+        poligono.angulo_rotacionar = math.atan2(dy, dx) + math.pi / 2
+
         self.controlador.desenhar()
 
     def finalizar(self, evento):
+        poligono = self.controlador.poligono_regular
+        if poligono is not None:
+            dx = evento.x - poligono.cx
+            dy = evento.y - poligono.cy
+            poligono.angulo_rotacionar = math.atan2(dy, dx) + math.pi / 2
+
         distancia = math.hypot(evento.x - self.x_inicio, evento.y - self.y_inicio)
         if distancia > 3:
             self.arrastando = True
         else:
             self.arrastando = False
-
+    
     def clique_esquerdo(self, evento):
         if self.arrastando:
             self.arrastando = False
