@@ -371,8 +371,8 @@ class FerramentaSelecionar(Ferramenta):
             ry1, ry2 = min(y0, evento.y), max(y0, evento.y)
 
             self.controlador.figuras_candidatas = [
-                figura for figura in self.controlador.figuras
-                if figura.intersecta_retangulo(rx1, ry1, rx2, ry2)
+              figura for figura in self.controlador.figuras
+              if figura.contido_em_retangulo(rx1, ry1, rx2, ry2)
             ]
 
             self.controlador.desenhar()
@@ -399,9 +399,9 @@ class FerramentaSelecionar(Ferramenta):
             ry1, ry2 = min(y0, y1), max(y0, y1)
 
             capturadas = [
-                figura for figura in self.controlador.figuras
-                if figura.intersecta_retangulo(rx1, ry1, rx2, ry2)
-            ]
+              figura for figura in self.controlador.figuras
+              if figura.contido_em_retangulo(rx1, ry1, rx2, ry2)
+             ]
 
             for figura in capturadas:
                 if figura not in self.controlador.figuras_selecionadas:
