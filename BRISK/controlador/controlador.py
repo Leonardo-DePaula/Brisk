@@ -72,10 +72,9 @@ class Controlador(Desenhos):
         self.janela.bind("<Right>", self.mover_para_frente)
         self.janela.bind("<Left>", self.mover_para_tras)
         self.janela.bind("<Up>", self.mover_para_topo)
-        self.janela.bind("<Down>", self.mover_para_fundo)        
+        self.janela.bind("<Down>", self.mover_para_fundo)
         self.janela.bind("<Control-u>", self.agrupar_figuras)
         self.janela.bind("<Control-d>", self.desagrupar_figura)
-
 
         self.interface.tipo_figura_var.trace_add(
             "write",
@@ -222,40 +221,42 @@ class Controlador(Desenhos):
 
         if caminho:
             self.abrir(caminho)
-
+    
     def agrupar_figuras(self, evento=None):
-
         if len(self.figuras_selecionadas) < 2:
             return
 
-        for figura in self.figuras_selecionadas:
+        figuras_para_agrupar = list(self.figuras_selecionadas)
+
+        for figura in figuras_para_agrupar:
             self.figuras.remove(figura)
 
-        composta = FiguraComposta(list(self.figuras_selecionadas))
+
+        composta = FiguraComposta(figuras_para_agrupar)
 
         self.figuras.append(composta)
-        self.figuras_compostas.append(composta)
 
-        self.figuras_selecionadas = []
-        self.figura_selecionada = composta
+        self.figuras_selecionadas = [composta]
+        self.atualizar_controles_com_figura(composta)
 
         self.desenhar()
-
+        
     def desagrupar_figura(self, evento=None):
-
-        figura = self.figura_selecionada
+        
+        if not self.figuras_selecionadas:
+            return
+        figura = self.figuras_selecionadas[0]
 
         if not isinstance(figura, FiguraComposta):
             return
 
         idx = self.figuras.index(figura)
 
-        self.figuras.remove(figura)
+        self.figuras.pop(idx)
         self.figuras[idx:idx] = figura.figuras
 
         self.figuras_compostas.remove(figura)
 
         self.figuras_selecionadas = list(figura.figuras)
-        self.figura_selecionada = None
 
         self.desenhar()
