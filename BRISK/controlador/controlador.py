@@ -72,7 +72,10 @@ class Controlador(Desenhos):
         self.janela.bind("<Right>", self.mover_para_frente)
         self.janela.bind("<Left>", self.mover_para_tras)
         self.janela.bind("<Up>", self.mover_para_topo)
-        self.janela.bind("<Down>", self.mover_para_fundo)
+        self.janela.bind("<Down>", self.mover_para_fundo)        
+        self.janela.bind("<Control-u>", self.agrupar_figuras)
+        self.janela.bind("<Control-d>", self.desagrupar_figura)
+
 
         self.interface.tipo_figura_var.trace_add(
             "write",
@@ -219,3 +222,40 @@ class Controlador(Desenhos):
 
         if caminho:
             self.abrir(caminho)
+
+      def agrupar_figuras(self, evento=None):
+
+        if len(self.figuras_escolhidas) < 2:
+            return
+
+        for figura in self.figuras_escolhidas:
+            self.figuras.remove(figura)
+
+        composta = FiguraComposta(list(self.figuras_escolhidas))
+
+        self.figuras.append(composta)
+        self.figuras_compostas.append(composta)
+
+        self.figuras_escolhidas = []
+        self.figura_selecionada = composta
+
+        self.desenhar()
+
+    def desagrupar_figura(self, evento=None):
+
+        figura = self.figura_selecionada
+
+        if not isinstance(figura, FiguraComposta):
+            return
+
+        idx = self.figuras.index(figura)
+
+        self.figuras.remove(figura)
+        self.figuras[idx:idx] = figura.figuras
+
+        self.figuras_compostas.remove(figura)
+
+        self.figuras_escolhidas = list(figura.figuras)
+        self.figura_selecionada = None
+
+        self.desenhar()
