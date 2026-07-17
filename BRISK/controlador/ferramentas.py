@@ -265,14 +265,14 @@ class FerramentaPoligonoRegular(Ferramenta):
 
     def finalizar(self, evento):
         poligono = self.controlador.poligono_regular
-        if poligono is not None:
-            dx = evento.x - poligono.cx
-            dy = evento.y - poligono.cy
-            poligono.angulo_rotacionar = math.atan2(dy, dx) + math.pi / 2
 
         distancia = math.hypot(evento.x - self.x_inicio, evento.y - self.y_inicio)
         if distancia > 3:
             self.arrastando = True
+            if poligono is not None:
+                dx = evento.x - poligono.cx
+                dy = evento.y - poligono.cy
+                poligono.angulo_rotacionar = math.atan2(dy, dx) + math.pi / 2
         else:
             self.arrastando = False
     
