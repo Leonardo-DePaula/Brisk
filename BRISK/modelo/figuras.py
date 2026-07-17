@@ -390,6 +390,114 @@ class Poligono(Figura):
             "tamEspessura": self.tamEspessura
         }
 
+class PoligonoRegular(Figura):
+    def __init__(self, cx, cy, raio, lados,
+                 cor_borda, cor_preenchimento, tamEspessura):
+
+        super().__init__(cor_preenchimento, cor_borda)
+
+        self.cx = cx
+        self.cy = cy
+        self.raio = raio
+        self.lados = lados
+        self.tamEspessura = tamEspessura
+
+    def calcular_pontos(self):
+
+        pontos = []
+
+        for i in range(self.lados):
+
+            angulo = (2 * math.pi * i / self.lados) - math.pi / 2
+
+            x = self.cx + self.raio * math.cos(angulo)
+            y = self.cy + self.raio * math.sin(angulo)
+
+            pontos.extend([x, y])
+
+        return pontos
+
+    def desenhar(self, canvas, dash=None):
+
+        canvas.create_polygon(
+            *self.calcular_pontos(),
+            fill=self.cor_preenchimento,
+            outline=self.cor_borda,
+            width=self.tamEspessura,
+            dash=dash
+        )
+
+    def contem(self, x, y):
+
+        pontos = self.calcular_pontos()
+
+        vertices = []
+
+        for i in range(0, len(pontos), 2):
+            vertices.append((pontos[i], pontos[i + 1]))
+
+        dentro = False
+        n = len(vertices)
+
+        p1x, p1y = vertices[0]
+
+        for i in range(n + 1):
+
+            p2x, p2y = vertices[i % n]
+
+            if y > min(p1y, p2y):
+
+                if y <= max(p1y, p2y):
+
+                    if x <= max(p1x, p2x):
+
+                        if p1y != p2y:
+
+                            x_interceptado = (
+                                (y - p1y) *
+                                (p2x - p1x) /
+                                (p2y - p1y)
+                            ) + p1x
+
+                        if p1x == p2x or x <= x_interceptado:
+                            dentro = not dentro
+
+            p1x, p1y = p2x, p2y
+
+        return dentro
+
+    def mover(self, dx, dy):
+
+        self.cx += dx
+        self.cy += dy
+
+    def obter_bbox(self):
+
+        pontos = self.calcular_pontos()
+
+        xs = pontos[0::2]
+        ys = pontos[1::2]
+
+        return (
+            min(xs),
+            min(ys),
+            max(xs),
+            max(ys)
+        )
+
+    def paraDicionario(self):
+
+        return {
+            "tipo": "PoligonoRegular",
+            "cx": self.cx,
+            "cy": self.cy,
+            "raio": self.raio,
+            "lados": self.lados,
+            "cor_borda": self.cor_borda,
+            "cor_preenchimento": self.cor_preenchimento,
+            "tamEspessura": self.tamEspessura
+        }
+
 
 def criarFiguraDeDicionario(dados):
 
@@ -430,4 +538,15 @@ def criarFiguraDeDicionario(dados):
             return Poligono(
                 dados["pontosPoligonos"], dados["cor_borda"],
                 dados["cor_preenchimento"], dados["tamEspessura"]
+            )
+        
+        case "PoligonoRegular":
+            return PoligonoRegular(
+                dados["cx"],
+                dados["cy"],
+                dados["raio"],
+                dados["lados"],
+                dados["cor_borda"],
+                dados["cor_preenchimento"],
+                dados["tamEspessura"]
             )
