@@ -8,7 +8,7 @@ class Interface:
     def __init__(self, janela):
         self.janela = janela
         self.janela.title("Brisk - App de Desenhos")
-        self.janela.state('normal')
+        self.maximizar_janela() 
  
         self.icone = PhotoImage(data=ICONE_BASE64)
         self.janela.iconphoto(True, self.icone)
@@ -33,6 +33,19 @@ class Interface:
  
         self.criar_interface()
         self.criar_canvas()
+    
+    def maximizar_janela(self): 
+        try:
+            self.janela.state('zoomed')
+
+        except Exception:
+            try:
+                self.janela.attributes('-zoomed', True)
+
+            except Exception:
+                largura = self.janela.winfo_screenwidth()
+                altura = self.janela.winfo_screenheight()
+                self.janela.geometry(f"{largura}x{altura}+0+0")
  
     def criar_interface(self):
         margens = {"padx": 4, "pady": 5}
@@ -179,6 +192,19 @@ class Interface:
         )
  
         self.botao_limpar.pack(side=LEFT, padx=0, pady=5)
+
+        # -------- Botão transparente --------
+
+        self.botao_sem_preenchimento = ttk.Button(   
+            frame_cores,
+            text="Transparente",
+            width=12
+        )
+
+        self.botao_sem_preenchimento.pack(              
+            side=LEFT,
+            padx=(10, 10)
+        )
  
     def criar_canvas(self):
         self.canvas = Canvas(
