@@ -508,6 +508,41 @@ class PoligonoRegular(Figura):
             "tamEspessura": self.tamEspessura
         }
 
+class FiguraComposta(Figura):
+    def __init__(self, figuras):
+        super().__init__("", "")
+        self.figuras = figuras
+
+    def desenhar(self, canvas, dash=None):
+        for figura in self.figuras:
+            figura.desenhar(canvas, dash=dash)
+
+    def contem(self, x, y):
+        return any(figura.contem(x, y) for figura in self.figuras)
+
+    def mover(self, dx, dy):
+        for figura in self.figuras:
+            figura.mover(dx, dy)
+
+    def obter_bbox(self):
+
+        bboxes = [figura.obter_bbox() for figura in self.figuras if figura.obter_bbox()]
+
+        if not bboxes:
+            return None
+
+        xs1 = [b[0] for b in bboxes]
+        ys1 = [b[1] for b in bboxes]
+        xs2 = [b[2] for b in bboxes]
+        ys2 = [b[3] for b in bboxes]
+
+        return (min(xs1), min(ys1), max(xs2), max(ys2))
+
+    def paraDicionario(self):
+        return {
+            "tipo": "FiguraComposta",
+            "figuras": [figura.paraDicionario() for figura in self.figuras]
+        }
 
 def criarFiguraDeDicionario(dados):
 
@@ -559,4 +594,9 @@ def criarFiguraDeDicionario(dados):
                 dados["cor_borda"],
                 dados["cor_preenchimento"],
                 dados["tamEspessura"]
+            )
+
+        case "FiguraComposta":
+            return FiguraComposta(
+                [criarFiguraDeDicionario(item) for item in dados["figuras"]]
             )
