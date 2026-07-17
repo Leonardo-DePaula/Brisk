@@ -235,7 +235,6 @@ class Controlador(Desenhos):
         self.figuras.append(composta)
 
         self.figuras_selecionadas = [composta]
-        self.figuras_selecionadas.append(composta)
         self.atualizar_controles_com_figura(composta)
 
         self.desenhar()
@@ -251,7 +250,6 @@ class Controlador(Desenhos):
 
         idx = self.figuras.index(figura)
 
-        self.figuras.remove(figura)
         self.figuras.pop(idx)
         self.figuras[idx:idx] = figura.figuras
 
