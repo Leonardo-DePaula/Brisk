@@ -224,24 +224,27 @@ class Controlador(Desenhos):
     
     def agrupar_figuras(self, evento=None):
 
-        if len(self.figuras_escolhidas) < 2:
+        if len(self.figuras_selecionadas) < 2:
             return
 
-        for figura in self.figuras_escolhidas:
+        for figura in self.figuras_selecionadas:
             self.figuras.remove(figura)
 
-        composta = FiguraComposta(list(self.figuras_escolhidas))
+        composta = FiguraComposta(list(self.figuras_selecionadas))
 
         self.figuras.append(composta)
 
-        self.figuras_escolhidas = []
+        self.figuras_selecionadas = [composta]
         self.figuras_selecionadas.append(composta)
+        self.atualizar_controles_com_figura(composta)
 
         self.desenhar()
 
     def desagrupar_figura(self, evento=None):
-
-        figura = self.figura_selecionada
+        
+        if not self.figuras_selecionadas:
+            return
+        figura = self.figuras_selecionadas[0]
 
         if not isinstance(figura, FiguraComposta):
             return
@@ -249,11 +252,11 @@ class Controlador(Desenhos):
         idx = self.figuras.index(figura)
 
         self.figuras.remove(figura)
+        self.figuras.pop(idx)
         self.figuras[idx:idx] = figura.figuras
 
         self.figuras_compostas.remove(figura)
 
-        self.figuras_escolhidas = list(figura.figuras)
-        self.figura_selecionada = None
+        self.figuras_selecionadas = list(figura.figuras)
 
         self.desenhar()
